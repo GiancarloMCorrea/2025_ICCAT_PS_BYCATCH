@@ -6,20 +6,20 @@ library(sf)
 library(ggplot2)
 library(viridis)
 library(boot)
+library(ggeffects)
+library(pdp)
 source('code/parameters_for_plots.R')
 source('code/aux_functions.R')
 
 # Select species and school type:
-sel_sp = 'Carcharhinus falciformis'
 this_type = 'FOB'
-min_year = 2015
 
 # Define folder to save results
-plot_folder = file.path('figures', this_type, 'VAST', sel_sp)
+plot_folder = file.path('figures', this_type, 'VAST')
 dir.create(plot_folder, recursive = TRUE, showWarnings = FALSE)
 
 # Define model folder:
-model_folder = file.path('models', this_type, 'VAST', sel_sp)
+model_folder = file.path('models', this_type, 'VAST')
 dir.create(model_folder, recursive = TRUE, showWarnings = FALSE)
 
 # -------------------------------------------------------------------------
@@ -29,29 +29,55 @@ user_region = readRDS(file = file.path('data', this_type, 'user_region.rds'))
 load(file.path('data', this_type, 'MyGrid.RData'))
 
 # -------------------------------------------------------------------------
-# Run model:
-mod_data = weight_data %>% dplyr::filter(year >= min_year, sp_code %in% sel_sp) 
-mod_data = mod_data %>% mutate(year = as.numeric(year), AreaSwept_km2 = 1)
+# Filter species:
+mod_data = weight_data
+cumsp_data = mod_data %>% group_by(sp_code) %>% summarise(value = sum(value))
+cumsp_data = arrange(cumsp_data, desc(value))
+this_sp = cumsp_data$sp_code[1] # change this index if want to make a loop
+mod_data = mod_data %>% dplyr::filter(sp_code %in% this_sp) 
 
-settings <- make_settings(n_x = 689, Region='User',
-                          purpose = "index2", bias.correct = FALSE,
+# Select variables to be used in the model:
+mod_data = mod_data %>% select(ID, id_set, year, month, vessel_code, flag_country,
+                               latitude, longitude, sst, sunrise_diference, tuna_catch,
+                               yft_catch, bet_catch, skj_catch, sp_code, value)
+# Remove NA's:
+mod_data = mod_data[complete.cases(mod_data), ]
+# Rename using VAST format:
+mod_data = mod_data %>% dplyr::rename(Year = year, Lat = latitude, Lon = longitude,
+                                      Catch = value, tSunrise = sunrise_diference)
+# Define variable type:
+mod_data = mod_data %>% mutate(tSunrise = as.numeric(tSunrise),
+                               Year = as.integer(Year), AreaSwept_km2 = 1)
+glimpse(mod_data)
+
+# Make settings:
+settings <- make_settings(n_x = 100, Region='User',
+                          purpose = "index2", bias.correct = TRUE,
                           use_anisotropy = FALSE, 
                           fine_scale = TRUE,
                           knot_method = 'grid')
 settings$ObsModel = c(4,0) # lognormal = 4 and logit-link = 0
-settings$FieldConfig[1:2,1] = c(0, 0) # no spatial or spatiotemporal effect comp 1
+# settings$FieldConfig[1:2,1] = c(0, 0) # no spatial or spatiotemporal effect comp 1
+# settings$FieldConfig[3,] = 0 # fixed effects betas
 settings$FieldConfig
 settings$RhoConfig
 fit <- fit_model(settings=settings,
-                 Lat_i=mod_data$latitude, Lon_i=mod_data$longitude,
-                 t_i=mod_data$year, b_i=mod_data$value,
+                 Lat_i=mod_data$Lat, Lon_i=mod_data$Lon,
+                 t_i=mod_data$Year, b_i=mod_data$Catch,
                  a_i=mod_data$AreaSwept_km2,
+                 covariate_data = as.data.frame(mod_data[,c('Lat', 'Lon', 'Year', 'sst')]),
+                 X2_formula = ~ poly(sst, 2),
+                 #X2config_cp = matrix(c(1), nrow = 1),
                  input_grid=user_region)
-save(fit, file = file.path(model_folder, 'fit.RData'))
+dir.create(file.path(model_folder, this_sp), showWarnings = FALSE)
+save(fit, file = file.path(model_folder, this_sp, 'fit.RData'))
 
 # Plot results:
-plot_results(fit, plot_set=3, working_dir = file.path(getwd(), plot_folder))
+dir.create(file.path(plot_folder, this_sp), showWarnings = FALSE)
+plot_results(fit, plot_set=c(3,12,15), working_dir = file.path(getwd(), plot_folder, this_sp))
 
+
+# -------------------------------------------------------------------------
 # Plot Omega 2nd component:
 plot_dat_omega = data.frame(lon = fit$extrapolation_list$Data_Extrap$Lon, 
                             lat = fit$extrapolation_list$Data_Extrap$Lat, 
@@ -94,3 +120,41 @@ PredGrid = left_join(MyGrid, pred_df, by = c('ID')) %>% na.omit
 p1 = plot_predictions(PredGrid, legend_position = 'bottom', nCol = 3)
 ggsave(filename = paste0('map_predictions', img_type), path = plot_folder, plot = p1, 
        width = 170, height = 140, units = 'mm', dpi = img_res)
+
+# -------------------------------------------------------------------------
+# Plot covariates effects (ggeffects):
+
+# Must add data-frames to global environment (hope to fix in future)
+covariate_data_full = fit$effects$covariate_data_full
+catchability_data_full = NULL
+
+# Plot 1st linear predictor, but could use `transformation` to apply link function
+pred = Effect.fit_model( mod = fit,
+                         focal.predictors = c("sst"),
+                         which_formula = "X2",
+                         transformation = list(link=identity, inverse=identity) )
+plot(pred)
+
+# -------------------------------------------------------------------------
+# Plot covariates effects (pdp):
+
+# Make function to interface with pdp
+pred.fun = function( object, newdata ){
+  predict( x=object,
+           Lat_i = object$data_frame$Lat_i,
+           Lon_i = object$data_frame$Lon_i,
+           t_i = object$data_frame$t_i,
+           a_i = object$data_frame$a_i,
+           what = "P1_iz",
+           new_covariate_data = newdata,
+           do_checks = FALSE )
+}
+
+# Run partial
+Partial = partial( object = fit,
+                   pred.var = "sst",
+                   pred.fun = pred.fun,
+                   train = fit$covariate_data )
+
+# Make plot using ggplot2
+autoplot(Partial)

@@ -6,11 +6,12 @@ library(sf)
 library(ggplot2)
 library(viridis)
 library(boot)
+require(corrplot)
 source('code/parameters_for_plots.R')
 source('code/aux_functions.R')
 
 # Select species and school type:
-n_sp = 15 # first N species (only applies to weight or numbers datasets)
+n_sp = 10 # first N species (only applies to weight or numbers datasets)
 this_type = 'FOB'
 
 # Define folder to save results
@@ -52,20 +53,18 @@ mod_data = mod_data %>% mutate(sp_number = as.numeric(as.character(sp_number)),
 glimpse(mod_data)
 
 # Make settings:
+n_factors = 2
 settings <- make_settings(n_x = 100, Region='User',
                           purpose = "ordination", bias.correct = FALSE,
                           use_anisotropy = FALSE, 
                           fine_scale = TRUE,
                           knot_method = 'grid',
-                          n_categories = 2)
-
-settings$ObsModel = c(10,2) # Tweedie
+                          ObsModel = c(2,0), # Delta-gamma/poisson link delta model
+                          RhoConfig = c("Beta1"=0,"Beta2"=0,"Epsilon1"=0,"Epsilon2"=0),
+                          n_categories = n_factors)
+# settings$ObsModel = c(2,1) # Delta-gamma/poisson link delta model
 settings$FieldConfig[c('Omega','Epsilon','Beta'),'Component_1'] = c(0,0,'IID')
-settings$RhoConfig[c('Beta1','Epsilon1')] = c(3,0)
-# Specify full rank spatial term and eliminate spatio-temporal term
-# this makes the demo run faster
-settings$FieldConfig[c('Omega','Epsilon','Beta'),'Component_2'] = c(2,0,'IID')
-settings$RhoConfig[c('Beta2','Epsilon2')] = c(0,0)
+settings$FieldConfig[c('Omega','Epsilon','Beta'),'Component_2'] = c(n_factors,0,'IID')
 
 fit <- fit_model(settings=settings,
                  Lat_i=mod_data$Lat, 
@@ -74,15 +73,32 @@ fit <- fit_model(settings=settings,
                  b_i=mod_data$Catch,
                  a_i=mod_data$AreaSwept_km2,
                  c_i=mod_data$sp_number-1,
-                 covariate_data = as.data.frame(mod_data[,c('Lat', 'Lon', 'Year', 'tuna_catch', 'sst', 'tSunrise')]),
-                 X2_formula = ~ tuna_catch + sst + tSunrise,
+                 # covariate_data = as.data.frame(mod_data[,c('Lat', 'Lon', 'Year', 'sst')]),
+                 # X2_formula = ~ sst,
                  newtonsteps = 0,
                  getsd = FALSE,
                  input_grid=user_region)
 save(fit, file = file.path(model_folder, 'fit.RData'))
 
 # Plot results
-results = plot( fit,
-                plot_set = c(3,17),
-                category_names = cumsp_data$sp_code,
-                working_dir = file.path(getwd(), plot_folder))
+plot_results( fit, plot_set = c(3,17), category_names = cumsp_data$sp_code,
+              working_dir = file.path(getwd(), plot_folder))
+
+
+# -------------------------------------------------------------------------
+# Plot correlations (Omega2)
+Cov_omega2 = fit$Report$L_omega2_cf %*% t(fit$Report$L_omega2_cf)
+cor_mat = cov2cor(Cov_omega2)
+colnames(cor_mat) = cumsp_data$sp_code
+rownames(cor_mat) = cumsp_data$sp_code
+corrplot(cor_mat ,method="pie", type="lower")
+corrplot.mixed( cor_mat )
+
+
+# -------------------------------------------------------------------------
+# Plot cluster (Omega 2)
+Cov_omega2 = fit$Report$L_omega2_cf %*% t(fit$Report$L_omega2_cf)
+sel_mat = fit$Report$L_omega2_cf
+rownames(sel_mat) = cumsp_data$sp_code
+Dist = dist(sel_mat, diag=TRUE, upper=TRUE)
+plot(hclust(Dist))
