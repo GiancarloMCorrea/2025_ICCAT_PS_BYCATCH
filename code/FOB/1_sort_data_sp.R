@@ -17,67 +17,52 @@ dir.create(plot_dir, recursive = TRUE, showWarnings = FALSE)
 
 # -------------------------------------------------------------------------
 # Load data
-load(file.path(save_data_folder, 'joinDF.RData'))
-st_geometry(joinDF) = NULL
-my_data = joinDF
+load(file.path(save_data_folder, 'obsPoints.RData'))
+st_geometry(obsPoints) = NULL
+my_data = obsPoints
 
 # -------------------------------------------------------------------------
 # Filter data based on some criteria:
 summary(my_data)
-my_data = my_data %>% dplyr::filter(year >= 2013)
+my_data = my_data %>% dplyr::filter(year >= 2013) # same as effort data
 
 # -------------------------------------------------------------------------
-# define sp to be deleted from dataset (usually target species)
-del_sp = c('Katsuwonus pelamis', 'Thunnus albacares', 'Thunnus obesus',
-           'Auxis rochei', 'Auxis thazard', 'Auxis thazard, A. rochei',
-           'Euthynnus affinis', 'Euthynnus alletteratus',
-           'Thunnus alalunga')
-# define sp to be used as covariates in the model (BET, YFT, SKJ)
-cov_sp = c('Thunnus albacares', 'Thunnus obesus', 'Katsuwonus pelamis')
-
+# # define sp to be deleted from dataset (usually target species)
+# del_sp = c('Katsuwonus pelamis', 'Thunnus albacares', 'Thunnus obesus',
+#            'Auxis rochei', 'Auxis thazard', 'Auxis thazard, A. rochei',
+#            'Euthynnus affinis', 'Euthynnus alletteratus',
+#            'Thunnus alalunga')
+# # define sp to be used as covariates in the model (BET, YFT, SKJ)
+# cov_sp = c('Thunnus albacares', 'Thunnus obesus', 'Katsuwonus pelamis')
 
 # -------------------------------------------------------------------------
-# 'tons' data frame:
-del_cols = c('number_', 'weight_')
-sel_col = 'tons_'
-tmp_data = my_data
-tmp_data = tmp_data %>% mutate(tuna_catch = rowSums(select(tmp_data, paste0('weight_', cov_sp))),
-                               yft_catch = rowSums(select(tmp_data, 'weight_Thunnus albacares')),
-                               bet_catch = rowSums(select(tmp_data, 'weight_Thunnus obesus')),
-                               skj_catch = rowSums(select(tmp_data, 'weight_Katsuwonus pelamis')))
-tmp_data = tmp_data %>% select(-grep(pattern = paste(del_cols, collapse = "|"), x = colnames(my_data)))
-tons_data = tidyr::pivot_longer(data = tmp_data, cols = grep(pattern = sel_col, x = colnames(tmp_data)),
-                                names_to = 'sp_code', values_to = 'value') %>% 
-  mutate(sp_code = gsub(pattern = sel_col, replacement = '', x = sp_code)) %>%
-  dplyr::filter(!(sp_code %in% del_sp))
 # 'number' data frame:
-del_cols = c('tons_', 'weight_')
+del_cols = c('weight_')
 sel_col = 'number_'
 tmp_data = my_data
-tmp_data = tmp_data %>% mutate(tuna_catch = rowSums(select(tmp_data, paste0('weight_', cov_sp))),
-                               yft_catch = rowSums(select(tmp_data, 'weight_Thunnus albacares')),
-                               bet_catch = rowSums(select(tmp_data, 'weight_Thunnus obesus')),
-                               skj_catch = rowSums(select(tmp_data, 'weight_Katsuwonus pelamis')))
+# tmp_data = tmp_data %>% mutate(tuna_catch = rowSums(select(tmp_data, paste0('weight_', cov_sp))),
+#                                yft_catch = rowSums(select(tmp_data, 'weight_Thunnus albacares')),
+#                                bet_catch = rowSums(select(tmp_data, 'weight_Thunnus obesus')),
+#                                skj_catch = rowSums(select(tmp_data, 'weight_Katsuwonus pelamis')))
 tmp_data = tmp_data %>% select(-grep(pattern = paste(del_cols, collapse = "|"), x = colnames(my_data)))
 numbers_data = tidyr::pivot_longer(data = tmp_data, cols = grep(pattern = sel_col, x = colnames(tmp_data)),
                                    names_to = 'sp_code', values_to = 'value') %>% 
-  mutate(sp_code = gsub(pattern = sel_col, replacement = '', x = sp_code)) %>%
-  dplyr::filter(!(sp_code %in% del_sp))
+                  mutate(sp_code = gsub(pattern = sel_col, replacement = '', x = sp_code)) 
+                  # dplyr::filter(!(sp_code %in% del_sp))
 # 'weight' data frame:
-del_cols = c('tons_', 'number_')
+del_cols = c('number_')
 sel_col = 'weight_'
 tmp_data = my_data
-tmp_data = tmp_data %>% mutate(tuna_catch = rowSums(select(tmp_data, paste0('weight_', cov_sp))),
-                               yft_catch = rowSums(select(tmp_data, 'weight_Thunnus albacares')),
-                               bet_catch = rowSums(select(tmp_data, 'weight_Thunnus obesus')),
-                               skj_catch = rowSums(select(tmp_data, 'weight_Katsuwonus pelamis')))
+# tmp_data = tmp_data %>% mutate(tuna_catch = rowSums(select(tmp_data, paste0('weight_', cov_sp))),
+#                                yft_catch = rowSums(select(tmp_data, 'weight_Thunnus albacares')),
+#                                bet_catch = rowSums(select(tmp_data, 'weight_Thunnus obesus')),
+#                                skj_catch = rowSums(select(tmp_data, 'weight_Katsuwonus pelamis')))
 tmp_data = tmp_data %>% select(-grep(pattern = paste(del_cols, collapse = "|"), x = colnames(my_data)))
 weight_data = tidyr::pivot_longer(data = tmp_data, cols = grep(pattern = sel_col, x = colnames(tmp_data)),
                                   names_to = 'sp_code', values_to = 'value') %>% 
-  mutate(sp_code = gsub(pattern = sel_col, replacement = '', x = sp_code)) %>%
-  dplyr::filter(!(sp_code %in% del_sp))
+                  mutate(sp_code = gsub(pattern = sel_col, replacement = '', x = sp_code)) 
+                  #dplyr::filter(!(sp_code %in% del_sp))
 
 # Save created data:
-saveRDS(object = tons_data, file = file.path(save_data_folder, 'tons_data.rds'))
 saveRDS(object = numbers_data, file = file.path(save_data_folder, 'numbers_data.rds'))
 saveRDS(object = weight_data, file = file.path(save_data_folder, 'weight_data.rds'))

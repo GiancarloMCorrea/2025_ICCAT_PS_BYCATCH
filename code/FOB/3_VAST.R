@@ -26,6 +26,7 @@ dir.create(model_folder, recursive = TRUE, showWarnings = FALSE)
 # Read data in:
 weight_data = readRDS(file = file.path('data', this_type, 'weight_data.rds'))
 user_region = readRDS(file = file.path('data', this_type, 'user_region.rds'))
+MyGridSets = readRDS(file = file.path('data', this_type, 'MyGridSets.rds'))
 load(file.path('data', this_type, 'MyGrid.RData'))
 
 # -------------------------------------------------------------------------
@@ -33,49 +34,64 @@ load(file.path('data', this_type, 'MyGrid.RData'))
 mod_data = weight_data
 cumsp_data = mod_data %>% group_by(sp_code) %>% summarise(value = sum(value))
 cumsp_data = arrange(cumsp_data, desc(value))
-this_sp = cumsp_data$sp_code[1] # change this index if want to make a loop
-mod_data = mod_data %>% dplyr::filter(sp_code %in% this_sp) 
+this_sp = cumsp_data$sp_code[10] # change this index if want to make a loop
+sp_data = mod_data %>% dplyr::filter(sp_code %in% this_sp) 
 
-# Select variables to be used in the model:
-mod_data = mod_data %>% select(ID, id_set, year, month, vessel_code, flag_country,
-                               latitude, longitude, sst, sunrise_diference, tuna_catch,
-                               yft_catch, bet_catch, skj_catch, sp_code, value)
 # Remove NA's:
-mod_data = mod_data[complete.cases(mod_data), ]
+sp_data = sp_data[complete.cases(sp_data), ]
 # Rename using VAST format:
-mod_data = mod_data %>% dplyr::rename(Year = year, Lat = latitude, Lon = longitude,
-                                      Catch = value, tSunrise = sunrise_diference)
+sp_data = sp_data %>% dplyr::rename(Year = year, Lat = latitude, Lon = longitude,
+                                      Catch = value, tunaCatch = tons_target_tuna)
 # Define variable type:
-mod_data = mod_data %>% mutate(tSunrise = as.numeric(tSunrise),
-                               Year = as.integer(Year), AreaSwept_km2 = 1)
-glimpse(mod_data)
+sp_data = sp_data %>% mutate(Year = as.integer(Year), AreaSwept_km2 = 1)
+glimpse(sp_data)
 
 # Make settings:
 settings <- make_settings(n_x = 100, Region='User',
                           purpose = "index2", bias.correct = TRUE,
                           use_anisotropy = FALSE, 
                           fine_scale = TRUE,
-                          knot_method = 'grid')
-settings$ObsModel = c(4,0) # lognormal = 4 and logit-link = 0
-# settings$FieldConfig[1:2,1] = c(0, 0) # no spatial or spatiotemporal effect comp 1
+                          knot_method = 'grid'
+                          # Options = c( "Calculate_Range"=TRUE, 
+                          #              "Calculate_effective_area"=TRUE, 
+                          #              "treat_nonencounter_as_zero"=TRUE,
+                          #              "SD_site_density" = TRUE,
+                          #              "SD_site_logdensity" = TRUE)
+                          )
+settings$ObsModel = c(4,4) # lognormal = 4 and logit-link = 4 (fix 1 and 0)
+settings$FieldConfig[1:2,1] = c(0, 0) # no spatial or spatiotemporal effect comp 1
 # settings$FieldConfig[3,] = 0 # fixed effects betas
 settings$FieldConfig
 settings$RhoConfig
 fit <- fit_model(settings=settings,
-                 Lat_i=mod_data$Lat, Lon_i=mod_data$Lon,
-                 t_i=mod_data$Year, b_i=mod_data$Catch,
-                 a_i=mod_data$AreaSwept_km2,
-                 covariate_data = as.data.frame(mod_data[,c('Lat', 'Lon', 'Year', 'sst')]),
-                 X2_formula = ~ poly(sst, 2),
-                 #X2config_cp = matrix(c(1), nrow = 1),
+                 Lat_i=sp_data$Lat, Lon_i=sp_data$Lon,
+                 t_i=sp_data$Year, b_i=sp_data$Catch,
+                 a_i=sp_data$AreaSwept_km2,
                  input_grid=user_region)
 dir.create(file.path(model_folder, this_sp), showWarnings = FALSE)
 save(fit, file = file.path(model_folder, this_sp, 'fit.RData'))
 
 # Plot results:
 dir.create(file.path(plot_folder, this_sp), showWarnings = FALSE)
-plot_results(fit, plot_set=c(3,12,15), working_dir = file.path(getwd(), plot_folder, this_sp))
+plot_results(fit, plot_set=c(3), working_dir = file.path(getwd(), plot_folder, this_sp))
 
+# Calculate annual bycatch estimates (by hand, TODO: calculate SE):
+nset_matrix = MyGridSets %>% select(ID, year, n_sets) %>% 
+  tidyr::pivot_wider(names_from = year, values_from = n_sets)
+nset_matrix = as.matrix(nset_matrix)
+rownames(nset_matrix) = nset_matrix[,1]
+nset_matrix = nset_matrix[,-1]
+# Order rows:
+nset_matrix = nset_matrix[match(user_region$ID, rownames(nset_matrix)), ]
+# Order columns:
+nset_matrix = nset_matrix[ , match(fit$year_labels, colnames(nset_matrix))]
+# Multiply by D_gct:
+bycatch_est = colSums(nset_matrix * fit$Report$D_gct[,1,])
+bycatch_est = data.frame(year = names(bycatch_est), est = as.vector(bycatch_est))
+plot(bycatch_est$year, bycatch_est$est, type = 'b')
+
+# Ratio estimator (confirm?)
+sp_data %>% group_by(Year, ID) %>% summarise(Catch = mean(Catch))
 
 # -------------------------------------------------------------------------
 # Plot Omega 2nd component:

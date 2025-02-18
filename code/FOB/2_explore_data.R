@@ -16,13 +16,16 @@ dir.create(plot_folder, recursive = TRUE, showWarnings = FALSE)
 
 # Data folder:
 data_folder = file.path('data', this_type)
+plot_dir = file.path('figures', this_type)
 
 # -------------------------------------------------------------------------
 # Read data in:
 weight_data = readRDS(file = file.path(data_folder, 'weight_data.rds'))
-tons_data = readRDS(file = file.path(data_folder, 'tons_data.rds'))
 numbers_data = readRDS(file = file.path(data_folder, 'numbers_data.rds'))
-
+MyGridSets = readRDS(file = file.path(data_folder, 'MyGridSets.rds'))
+load(file.path(data_folder, 'effPoints.RData'))
+load(file.path(data_folder, 'obsPoints.RData'))
+obsPoints = obsPoints %>% dplyr::filter(year >= 2013)
 
 # -------------------------------------------------------------------------
 # Make figures dominance sp groups:
@@ -84,21 +87,18 @@ for(i in seq_along(all_sp)) {
 
 
 # -------------------------------------------------------------------------
-# Fishing locations by season/month:
-plot_data = weight_data %>% group_by(year, month, id_set) %>% 
-              summarise(lon = mean(longitude), lat = mean(latitude))
-plot_data = plot_data %>% mutate(month = as.numeric(month),
+# Fishing locations OBS by season/month:
+plot_data = obsPoints %>% mutate(month = as.numeric(month),
                                  season = ifelse(month %in% 1:3, '1',
                                                 ifelse(month %in% 4:6, '2',
                                                        ifelse(month %in% 7:9, '3', '4'))))
-plot_data = plot_data %>% st_as_sf(coords = c("lon", "lat"), crs = 4326, remove = FALSE)
 
 # Make plot:
 p1 = ggplot(plot_data) + geom_sf(aes(color = season), size = 0.5, alpha = 0.5)
 p1 = add_sf_map(p1)
 p1 = p1 + scale_color_brewer(palette = 'Set1') + 
   theme(legend.position = 'bottom') + facet_wrap(~ year)
-ggsave(paste0('fishing_locations_season', img_type), path = plot_folder, plot = p1,
+ggsave(paste0('obs_map_sets_seas', img_type), path = plot_folder, plot = p1,
        width = img_width, height = 150, units = 'mm', dpi = img_res)
 
 
@@ -114,10 +114,10 @@ plot_data = plot_data %>% mutate(month = as.numeric(month),
 p1 = ggplot(plot_data, aes(x = factor(year), y = n_sp_catch)) + 
   geom_boxplot(aes(fill = season), width = 0.8) +
   scale_fill_brewer(palette = 'Set1') +
-  xlab(NULL) + ylab('N sp bycatch') +
+  xlab(NULL) + ylab('N-sp/set') +
   theme(legend.position = 'bottom')
-ggsave(paste0('n_sp_per_set', img_type), path = plot_folder, plot = p1,
-       width = img_width*0.75, height = 100, units = 'mm', dpi = img_res)
+ggsave(paste0('obs_n-sp_set', img_type), path = plot_folder, plot = p1,
+       width = img_width*0.75, height = 90, units = 'mm', dpi = img_res)
 
 # -------------------------------------------------------------------------
 # Proportion of sets with positive bycatch:
@@ -135,5 +135,20 @@ p1 = ggplot(data = plot_data, aes(x = factor(year), y = prop_bycatch)) +
   scale_fill_brewer(palette = 'Set1') +
   xlab(NULL) + ylab('Sets with bycatch (%)') +
   theme(legend.position = 'bottom')
-ggsave(paste0('prop_set_bycatch', img_type), path = plot_folder, plot = p1,
-       width = img_width*0.75, height = 100, units = 'mm', dpi = img_res)
+ggsave(paste0('obs_prop-pos_set', img_type), path = plot_folder, plot = p1,
+       width = img_width*0.75, height = 90, units = 'mm', dpi = img_res)
+
+
+# -------------------------------------------------------------------------
+# Plot N sets per grid:
+plot_data = MyGridSets %>% st_as_sf(coords = c("Lon", "Lat"), crs = 4326, remove = FALSE)
+
+# Make plot:
+p1 = ggplot(plot_data) + geom_sf(aes(color = n_sets), size = 0.5)
+p1 = add_sf_map(p1)
+p1 = p1 + scale_color_viridis() + 
+  theme(legend.position = 'bottom') + facet_wrap(~ year)
+ggsave(paste0('eff_map_grid-sets', img_type), path = plot_folder, plot = p1,
+       width = img_width, height = 150, units = 'mm', dpi = img_res)
+
+
