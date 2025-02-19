@@ -46,22 +46,26 @@ tmp_data = my_data
 #                                skj_catch = rowSums(select(tmp_data, 'weight_Katsuwonus pelamis')))
 tmp_data = tmp_data %>% select(-grep(pattern = paste(del_cols, collapse = "|"), x = colnames(my_data)))
 numbers_data = tidyr::pivot_longer(data = tmp_data, cols = grep(pattern = sel_col, x = colnames(tmp_data)),
-                                   names_to = 'sp_code', values_to = 'value') %>% 
-                  mutate(sp_code = gsub(pattern = sel_col, replacement = '', x = sp_code)) 
-                  # dplyr::filter(!(sp_code %in% del_sp))
+                                   names_to = 'sp_name', values_to = 'value') %>% 
+                  mutate(sp_name = gsub(pattern = sel_col, replacement = '', x = sp_name)) 
+                  # dplyr::filter(!(sp_name %in% del_sp))
+# Final edits:
+numbers_data = numbers_data %>% dplyr::rename(Year = year, Lat = latitude, Lon = longitude,
+                                            Catch = value, tunaCatch = tons_target_tuna)
+numbers_data = numbers_data %>% mutate(Year = as.integer(Year), AreaSwept_km2 = 1)
+
 # 'weight' data frame:
 del_cols = c('number_')
 sel_col = 'weight_'
 tmp_data = my_data
-# tmp_data = tmp_data %>% mutate(tuna_catch = rowSums(select(tmp_data, paste0('weight_', cov_sp))),
-#                                yft_catch = rowSums(select(tmp_data, 'weight_Thunnus albacares')),
-#                                bet_catch = rowSums(select(tmp_data, 'weight_Thunnus obesus')),
-#                                skj_catch = rowSums(select(tmp_data, 'weight_Katsuwonus pelamis')))
 tmp_data = tmp_data %>% select(-grep(pattern = paste(del_cols, collapse = "|"), x = colnames(my_data)))
 weight_data = tidyr::pivot_longer(data = tmp_data, cols = grep(pattern = sel_col, x = colnames(tmp_data)),
-                                  names_to = 'sp_code', values_to = 'value') %>% 
-                  mutate(sp_code = gsub(pattern = sel_col, replacement = '', x = sp_code)) 
-                  #dplyr::filter(!(sp_code %in% del_sp))
+                                  names_to = 'sp_name', values_to = 'value') %>% 
+                  mutate(sp_name = gsub(pattern = sel_col, replacement = '', x = sp_name)) 
+# Final edits:
+weight_data = weight_data %>% dplyr::rename(Year = year, Lat = latitude, Lon = longitude,
+                                    Catch = value, tunaCatch = tons_target_tuna)
+weight_data = weight_data %>% mutate(Year = as.integer(Year), AreaSwept_km2 = 1)
 
 # Save created data:
 saveRDS(object = numbers_data, file = file.path(save_data_folder, 'numbers_data.rds'))

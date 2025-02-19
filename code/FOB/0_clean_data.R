@@ -44,7 +44,12 @@ my_data = my_data %>% mutate(id_set = 1:n(),
                              year = as.integer(format(observation_date, '%Y')),
                              month = format(observation_date, '%m'), .before = 'ocean_code')
 glimpse(my_data)
-summary(my_data[,var_columns])
+summary(my_data)
+
+# Delete NA rows:
+dim(my_data)
+my_data = my_data[complete.cases(my_data), ]
+dim(my_data)
 
 # Make plot year and month:
 p1 = ggplot(my_data, aes(x = factor(year), fill = month)) + 
@@ -58,10 +63,10 @@ ggsave(filename = 'obs_num_y-m.png', path = plot_dir, plot = p1,
        width = img_width, height = 130, units = 'mm', dpi = 300)
 
 # Explore maps:
-obsPoints = my_data %>% st_as_sf(coords = c("longitude", "latitude"), crs = 4326, remove = FALSE)
+obsDF = my_data %>% st_as_sf(coords = c("longitude", "latitude"), crs = 4326, remove = FALSE)
 
 # Make plot:
-p1 = ggplot(obsPoints) + geom_sf(size = 1, alpha = 0.5)
+p1 = ggplot(obsDF) + geom_sf(size = 1, alpha = 0.5)
 p1 = add_sf_map(p1)
 p1 = p1 + facet_wrap(~ year)
 ggsave(paste0('obs_map_sets', img_type), plot = p1, path = plot_dir,
@@ -119,30 +124,38 @@ ggsave(paste0('eff_map_sets', img_type), plot = p1, path = plot_dir,
 grid_size = 1 # in degrees
 
 # Point and grid (aggregated):
-MyPoints = eff_data %>% mutate(id_set = 1:n()) %>%
+effDF = eff_data %>% mutate(id_set = 1:n()) %>%
             st_as_sf(coords = c("longitude", "latitude"), crs = 4326, remove = FALSE)
-min_lon = floor(min(MyPoints$longitude))
-min_lat = floor(min(MyPoints$latitude))
-MyGrid = st_make_grid(MyPoints, cellsize = c(grid_size, grid_size), offset = c(min_lon, min_lat)) %>%  # define grid size here
+min_lon = floor(min(effDF$longitude))
+min_lat = floor(min(effDF$latitude))
+MyGrid = st_make_grid(effDF, cellsize = c(grid_size, grid_size), offset = c(min_lon, min_lat)) %>%  # define grid size here
   st_set_crs(4326) %>% st_sf() %>% dplyr::mutate(ID = 1:n())
 
-# Join both Grid and Points:
+# Join both Grid and Points (effort data):
+effPoints = st_join(MyGrid, left = TRUE, effDF) %>% na.omit
 # Do it in this way to avoid repeated rows when rounded lon/lat fall on 
-# grid borders
-MyPoints$ID = MyGrid$ID[st_nearest_feature(MyPoints, MyGrid)]
+# grid borders:
+index_dup = effPoints %>% st_drop_geometry() %>% select(-ID) %>% duplicated # check for duplicates
+effPoints = effPoints[!index_dup, ]
+identical(nrow(effPoints), nrow(effDF))
 
 # Also attach ID info to observations:
-obsPoints$ID = MyGrid$ID[st_nearest_feature(obsPoints, MyGrid)]
+# Some points may be removed since obs (all fleets) and eff is SPA
+nrow(obsDF)
+obsPoints = st_join(MyGrid, left = TRUE, obsDF) %>% na.omit
+index_dup = obsPoints %>% st_drop_geometry() %>% select(-ID) %>% duplicated # check for duplicates
+obsPoints = obsPoints[!index_dup, ]
+nrow(obsPoints)
 save(obsPoints, file = file.path(save_data_folder, 'obsPoints.RData'))
 
 # Filter based on some criteria:
 # Identify grid (and points inside) with some criteria:
-my_tab = xtabs(~ ID + year, data = MyPoints) # find frequency of sets per grid and year
+my_tab = xtabs(~ ID + year, data = effPoints) # find frequency of sets per grid and year
 my_freq = apply(my_tab, 1, function(x) sum(x > 0)) # find recurrent grids over the years
 include_grid = names(my_freq)[which(as.vector(my_freq) >= 0)] # IMPORTANT: include all!
 include_grid = as.numeric(include_grid)
 # Remove grids:
-effPoints = MyPoints %>% dplyr::filter(ID %in% include_grid)
+effPoints = effPoints %>% dplyr::filter(ID %in% include_grid)
 # Save:
 save(effPoints, file = file.path(save_data_folder, 'effPoints.RData'))
 
@@ -153,16 +166,16 @@ MyGrid$Area_km2 = as.numeric(st_area(MyGrid))*1e-06 # in km2
 save(MyGrid, file = file.path(save_data_folder, 'MyGrid.RData'))
 
 # Save extrapolation grid in VAST format:
-user_region = st_centroid(MyGrid) %>% dplyr::mutate(Lon = sf::st_coordinates(.)[,1], Lat = sf::st_coordinates(.)[,2])
-st_geometry(user_region) = NULL
-saveRDS(user_region, file = file.path(save_data_folder, 'user_region.rds'))
+extraRegion_VAST = st_centroid(MyGrid) %>% dplyr::mutate(Lon = sf::st_coordinates(.)[,1], Lat = sf::st_coordinates(.)[,2])
+st_geometry(extraRegion_VAST) = NULL
+saveRDS(extraRegion_VAST, file = file.path(save_data_folder, 'extraRegion_VAST.rds'))
 
 # Calculate number of sets per grid and year:
-nsets_df = effPoints %>% st_drop_geometry() %>% group_by(year, ID) %>% summarise(n_sets = n())
+nsets_df = effPoints %>% st_drop_geometry() %>% group_by(year, ID) %>% summarise(n_sets = n()) %>% dplyr::rename(Year = year)
 all_years = sort(unique(eff_data$year))
 n_years = length(all_years)
-MyGridSets = purrr::map_dfr(seq_len(n_years), ~user_region)
-MyGridSets = MyGridSets %>% dplyr::mutate(year = rep(all_years, each = nrow(user_region)))
-MyGridSets = left_join(MyGridSets, nsets_df)
-MyGridSets$n_sets[which(is.na(MyGridSets$n_sets))] = 0 # no sets in NAs
-saveRDS(MyGridSets, file = file.path(save_data_folder, 'MyGridSets.rds'))
+extraRegion_tinyVAST = crossing(extraRegion_VAST, Year = all_years)
+extraRegion_tinyVAST = left_join(extraRegion_tinyVAST, nsets_df)
+extraRegion_tinyVAST$n_sets[which(is.na(extraRegion_tinyVAST$n_sets))] = 0 # no sets in NAs
+extraRegion_tinyVAST = as.data.frame(extraRegion_tinyVAST)
+saveRDS(extraRegion_tinyVAST, file = file.path(save_data_folder, 'extraRegion_tinyVAST.rds'))

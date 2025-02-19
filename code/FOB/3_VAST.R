@@ -8,6 +8,7 @@ library(viridis)
 library(boot)
 library(ggeffects)
 library(pdp)
+library(sdmTMB)
 source('code/parameters_for_plots.R')
 source('code/aux_functions.R')
 
@@ -25,26 +26,17 @@ dir.create(model_folder, recursive = TRUE, showWarnings = FALSE)
 # -------------------------------------------------------------------------
 # Read data in:
 weight_data = readRDS(file = file.path('data', this_type, 'weight_data.rds'))
-user_region = readRDS(file = file.path('data', this_type, 'user_region.rds'))
-MyGridSets = readRDS(file = file.path('data', this_type, 'MyGridSets.rds'))
+extraRegion_VAST = readRDS(file = file.path('data', this_type, 'extraRegion_VAST.rds'))
+extraRegion_tinyVAST = readRDS(file = file.path('data', this_type, 'extraRegion_tinyVAST.rds'))
 load(file.path('data', this_type, 'MyGrid.RData'))
 
 # -------------------------------------------------------------------------
 # Filter species:
 mod_data = weight_data
-cumsp_data = mod_data %>% group_by(sp_code) %>% summarise(value = sum(value))
-cumsp_data = arrange(cumsp_data, desc(value))
-this_sp = cumsp_data$sp_code[10] # change this index if want to make a loop
-sp_data = mod_data %>% dplyr::filter(sp_code %in% this_sp) 
-
-# Remove NA's:
-sp_data = sp_data[complete.cases(sp_data), ]
-# Rename using VAST format:
-sp_data = sp_data %>% dplyr::rename(Year = year, Lat = latitude, Lon = longitude,
-                                      Catch = value, tunaCatch = tons_target_tuna)
-# Define variable type:
-sp_data = sp_data %>% mutate(Year = as.integer(Year), AreaSwept_km2 = 1)
-glimpse(sp_data)
+cumsp_data = mod_data %>% group_by(sp_name) %>% summarise(Catch = sum(Catch))
+cumsp_data = arrange(cumsp_data, desc(Catch))
+this_sp = cumsp_data$sp_name[1] # change this index if want to make a loop
+sp_data = mod_data %>% dplyr::filter(sp_name %in% this_sp) 
 
 # Make settings:
 settings <- make_settings(n_x = 100, Region='User',
@@ -52,41 +44,37 @@ settings <- make_settings(n_x = 100, Region='User',
                           use_anisotropy = FALSE, 
                           fine_scale = TRUE,
                           knot_method = 'grid'
-                          # Options = c( "Calculate_Range"=TRUE, 
-                          #              "Calculate_effective_area"=TRUE, 
-                          #              "treat_nonencounter_as_zero"=TRUE,
-                          #              "SD_site_density" = TRUE,
-                          #              "SD_site_logdensity" = TRUE)
                           )
-settings$ObsModel = c(4,4) # lognormal = 4 and logit-link = 4 (fix 1 and 0)
+settings$ObsModel = c(4,1) # lognormal = 4 and logit-link = 1 
 settings$FieldConfig[1:2,1] = c(0, 0) # no spatial or spatiotemporal effect comp 1
 # settings$FieldConfig[3,] = 0 # fixed effects betas
 settings$FieldConfig
+settings$RhoConfig[4] = 4
 settings$RhoConfig
-fit <- fit_model(settings=settings,
+VModel <- fit_model(settings=settings,
                  Lat_i=sp_data$Lat, Lon_i=sp_data$Lon,
                  t_i=sp_data$Year, b_i=sp_data$Catch,
                  a_i=sp_data$AreaSwept_km2,
-                 input_grid=user_region)
+                 input_grid=extraRegion_VAST)
 dir.create(file.path(model_folder, this_sp), showWarnings = FALSE)
-save(fit, file = file.path(model_folder, this_sp, 'fit.RData'))
+save(VModel, file = file.path(model_folder, this_sp, 'fit.RData'))
 
 # Plot results:
 dir.create(file.path(plot_folder, this_sp), showWarnings = FALSE)
-plot_results(fit, plot_set=c(3), working_dir = file.path(getwd(), plot_folder, this_sp))
+plot_results(VModel, plot_set=c(3), working_dir = file.path(getwd(), plot_folder, this_sp))
 
 # Calculate annual bycatch estimates (by hand, TODO: calculate SE):
-nset_matrix = MyGridSets %>% select(ID, year, n_sets) %>% 
-  tidyr::pivot_wider(names_from = year, values_from = n_sets)
+nset_matrix = extraRegion_tinyVAST %>% select(ID, Year, n_sets) %>% 
+  tidyr::pivot_wider(names_from = Year, values_from = n_sets)
 nset_matrix = as.matrix(nset_matrix)
 rownames(nset_matrix) = nset_matrix[,1]
 nset_matrix = nset_matrix[,-1]
 # Order rows:
-nset_matrix = nset_matrix[match(user_region$ID, rownames(nset_matrix)), ]
+nset_matrix = nset_matrix[match(extraRegion_VAST$ID, rownames(nset_matrix)), ]
 # Order columns:
-nset_matrix = nset_matrix[ , match(fit$year_labels, colnames(nset_matrix))]
+nset_matrix = nset_matrix[ , match(VModel$year_labels, colnames(nset_matrix))]
 # Multiply by D_gct:
-bycatch_est = colSums(nset_matrix * fit$Report$D_gct[,1,])
+bycatch_est = colSums(nset_matrix * VModel$Report$D_gct[,1,])
 bycatch_est = data.frame(year = names(bycatch_est), est = as.vector(bycatch_est))
 plot(bycatch_est$year, bycatch_est$est, type = 'b')
 

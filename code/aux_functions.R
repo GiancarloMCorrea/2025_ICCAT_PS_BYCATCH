@@ -46,3 +46,22 @@ plot_predictions = function(plot_data, legend_position = c(0.65, 0.08), legend_t
   return(p1)
   
 }
+
+plot_time_predictions = function(plot_data, obs_data = NULL, var_x, var_y, 
+                                 var_lwr, var_upr,
+                                 var_type,
+                                 yLab = 'CPUE', add_legend = TRUE, 
+                                 add_nominal = TRUE) {
+  
+  p1 = ggplot(data = plot_data, aes(x = {{var_x}}, y = {{var_y}})) +
+    geom_line(aes(color = {{var_type}})) +
+    geom_ribbon(aes(ymin = {{var_lwr}}, ymax = {{var_upr}}, fill = {{var_type}}), alpha = 0.3) + 
+    ylab(yLab) + xlab(NULL) +
+    guides(color = guide_legend(title = NULL), fill = guide_legend(title = NULL))
+  if(!add_legend) p1 = p1 + theme(legend.position = 'none')
+  if(add_nominal) p1 = p1 + geom_point(data = obs_data, aes(x = {{var_x}}, y = {{var_y}}), color = 'red') 
+  
+  return(p1)
+  
+}
+
