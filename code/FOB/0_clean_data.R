@@ -92,6 +92,8 @@ eff_data = eff_data %>% mutate(month = as.integer(format(as.Date(fecha, format =
                                .after = 'fecha')
 # Remove rows with number of sets = 0
 eff_data = eff_data %>% dplyr::filter(no_sets > 0)
+# Distribute tuna catch among no sets:
+eff_data = eff_data %>% mutate(tuna_catch = tuna_catch/no_sets)
 # Repeat rows based on the number of sets:
 eff_data = eff_data %>% tidyr::uncount(no_sets)
 
@@ -133,11 +135,12 @@ MyGrid = st_make_grid(effDF, cellsize = c(grid_size, grid_size), offset = c(min_
 
 # Join both Grid and Points (effort data):
 effPoints = st_join(MyGrid, left = TRUE, effDF) %>% na.omit
-# Do it in this way to avoid repeated rows when rounded lon/lat fall on 
-# grid borders:
+# Do it in this way to avoid repeated rows when rounded lon/lat fall on grid borders:
 index_dup = effPoints %>% st_drop_geometry() %>% select(-ID) %>% duplicated # check for duplicates
 effPoints = effPoints[!index_dup, ]
+effPoints = effPoints %>% st_drop_geometry()
 identical(nrow(effPoints), nrow(effDF))
+save(effPoints, file = file.path(save_data_folder, 'effPoints.RData'))
 
 # Also attach ID info to observations:
 # Some points may be removed since obs (all fleets) and eff is SPA
@@ -146,6 +149,7 @@ obsPoints = st_join(MyGrid, left = TRUE, obsDF) %>% na.omit
 index_dup = obsPoints %>% st_drop_geometry() %>% select(-ID) %>% duplicated # check for duplicates
 obsPoints = obsPoints[!index_dup, ]
 nrow(obsPoints)
+obsPoints = obsPoints %>% st_drop_geometry()
 save(obsPoints, file = file.path(save_data_folder, 'obsPoints.RData'))
 
 # Filter based on some criteria:
@@ -154,11 +158,6 @@ my_tab = xtabs(~ ID + year, data = effPoints) # find frequency of sets per grid 
 my_freq = apply(my_tab, 1, function(x) sum(x > 0)) # find recurrent grids over the years
 include_grid = names(my_freq)[which(as.vector(my_freq) >= 0)] # IMPORTANT: include all!
 include_grid = as.numeric(include_grid)
-# Remove grids:
-effPoints = effPoints %>% dplyr::filter(ID %in% include_grid)
-# Save:
-save(effPoints, file = file.path(save_data_folder, 'effPoints.RData'))
-
 # Apply filter to grid df and calculate Area km2:
 MyGrid = MyGrid %>% dplyr::filter(ID %in% include_grid)
 plot(MyGrid)
@@ -166,8 +165,8 @@ MyGrid$Area_km2 = as.numeric(st_area(MyGrid))*1e-06 # in km2
 save(MyGrid, file = file.path(save_data_folder, 'MyGrid.RData'))
 
 # Save extrapolation grid in VAST format:
-extraRegion_VAST = st_centroid(MyGrid) %>% dplyr::mutate(Lon = sf::st_coordinates(.)[,1], Lat = sf::st_coordinates(.)[,2])
-st_geometry(extraRegion_VAST) = NULL
+extraRegion_VAST = st_centroid(MyGrid) %>% 
+          dplyr::mutate(Lon = sf::st_coordinates(.)[,1], Lat = sf::st_coordinates(.)[,2]) %>% st_drop_geometry()
 saveRDS(extraRegion_VAST, file = file.path(save_data_folder, 'extraRegion_VAST.rds'))
 
 # Calculate number of sets per grid and year:

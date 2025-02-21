@@ -17,8 +17,8 @@ dir.create(plot_dir, recursive = TRUE, showWarnings = FALSE)
 
 # -------------------------------------------------------------------------
 # Load data
+extraRegion_tinyVAST = readRDS(file = file.path('data', this_type, 'extraRegion_tinyVAST.rds'))
 load(file.path(save_data_folder, 'obsPoints.RData'))
-st_geometry(obsPoints) = NULL
 my_data = obsPoints
 
 # -------------------------------------------------------------------------
@@ -70,3 +70,28 @@ weight_data = weight_data %>% mutate(Year = as.integer(Year), AreaSwept_km2 = 1)
 # Save created data:
 saveRDS(object = numbers_data, file = file.path(save_data_folder, 'numbers_data.rds'))
 saveRDS(object = weight_data, file = file.path(save_data_folder, 'weight_data.rds'))
+
+# -------------------------------------------------------------------------
+
+# Calculate annual bycatch estimates (tons) from obs data per species:
+save_est_folder = file.path(save_data_folder, 'bycatch_est_obs')
+dir.create(save_est_folder, showWarnings = FALSE)
+eff_yr = extraRegion_tinyVAST %>% group_by(Year, ID) %>% summarise(n_sets = sum(n_sets))
+all_sp = unique(weight_data$sp_name)
+
+for(j in seq_along(all_sp)) {
+  
+  sp_data = weight_data %>% dplyr::filter(sp_name %in% all_sp[j])
+  # Ratio estimator: (calculate mean catch per set per year, and then multiply by total effort per year)
+  obs_yr = sp_data %>% group_by(Year, ID) %>% summarise(avgCatch = mean(Catch))
+  obs_df = left_join(obs_yr, eff_yr)
+  # There may be some NA due to ID present in obs data (different flags) but absent in effData (only SPA)
+  obs_df = obs_df %>% mutate(est = avgCatch*n_sets) %>% group_by(Year) %>% 
+    summarise(est = sum(est, na.rm = TRUE))
+  write.csv(obs_df, file = file.path(save_est_folder, paste0(all_sp[j], '.csv')), row.names = FALSE)
+  cat('Done with: ', all_sp[j], '\n')
+  
+}
+
+
+
