@@ -52,6 +52,7 @@ plot_time_predictions = function(plot_data, obs_data = NULL, var_x, var_y,
                                  var_type,
                                  yLab = 'CPUE', add_legend = TRUE) {
   
+  require(scales)
   CIrib = FALSE
   if((deparse(substitute(var_lwr)) %in% colnames(plot_data)) & (deparse(substitute(var_upr)) %in% colnames(plot_data))) CIrib = TRUE
   add_nominal = TRUE
@@ -59,7 +60,9 @@ plot_time_predictions = function(plot_data, obs_data = NULL, var_x, var_y,
   
   p1 = ggplot(data = plot_data, aes(x = {{var_x}}, y = {{var_y}})) +
     geom_line(aes(color = {{var_type}})) +
-    ylab(yLab) + xlab(NULL) 
+    ylab(yLab) + xlab(NULL) +
+    scale_x_continuous(breaks = scales::pretty_breaks()) +
+    coord_cartesian(ylim = c(0, NA))
   if(CIrib) {
     p1 = p1 + geom_ribbon(aes(ymin = {{var_lwr}}, ymax = {{var_upr}}, fill = {{var_type}}), alpha = 0.3) + 
     guides(color = guide_legend(title = NULL), fill = guide_legend(title = NULL))

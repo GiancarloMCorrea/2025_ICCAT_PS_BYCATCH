@@ -35,7 +35,7 @@ mod_data = weight_data
 cumsp_data = mod_data %>% group_by(sp_name) %>% summarise(Catch = sum(Catch))
 cumsp_data = arrange(cumsp_data, desc(Catch))
 
-n_mod_sp = 5 # model the first N species
+n_mod_sp = 20 # model the first N species
 for(i in 1:n_mod_sp) {
 
   # Create dir to save plots and model outputs:
@@ -91,7 +91,18 @@ for(i in 1:n_mod_sp) {
          plot = p1, width = img_width*0.75, height = 120, units = 'mm', dpi = img_res)
 
   # Fit tinyVAST model
-  tVModel = tinyVAST( data = sp_data,
+  tV_mod_ln = tryCatch(tinyVAST( data = sp_data,
+                           formula = Catch ~ 0 + factor(Year),
+                           delta_options = list(
+                             delta_formula = ~ 0 + factor(Year),
+                             delta_sem = "sp <-> sp, spatial_sd",
+                             delta_dsem = "sp -> sp, 1, NA, 0"), # fix rho parameter at zero, so epsilon IID
+                           variable_column = 'sp_id',
+                           space_columns = c("Lon", "Lat"),
+                           time_column = 'Year',
+                           family = delta_lognormal(),
+                           spatial_graph = my_mesh ), error = function(e) conditionMessage(e))
+  tV_mod_ln_pl = tryCatch(tinyVAST( data = sp_data,
                       formula = Catch ~ 0 + factor(Year),
                       delta_options = list(
                            delta_formula = ~ 0 + factor(Year),
@@ -101,9 +112,72 @@ for(i in 1:n_mod_sp) {
                       space_columns = c("Lon", "Lat"),
                       time_column = 'Year',
                       family = delta_lognormal(type="poisson-link"),
-                      spatial_graph = my_mesh )
-  tVModel$opt$convergence
-  save(tVModel, file = file.path(model_folder, this_sp, 'fit.RData'))
+                      spatial_graph = my_mesh ), error = function(e) conditionMessage(e))
+  tV_mod_gm = tryCatch(tinyVAST( data = sp_data,
+                       formula = Catch ~ 0 + factor(Year),
+                       delta_options = list(
+                         delta_formula = ~ 0 + factor(Year),
+                         delta_sem = "sp <-> sp, spatial_sd",
+                         delta_dsem = "sp -> sp, 1, NA, 0"), # fix rho parameter at zero, so epsilon IID
+                       variable_column = 'sp_id',
+                       space_columns = c("Lon", "Lat"),
+                       time_column = 'Year',
+                       family = delta_gamma(),
+                       spatial_graph = my_mesh ), error = function(e) conditionMessage(e))
+  tV_mod_gm_pl = tryCatch(tinyVAST( data = sp_data,
+                        formula = Catch ~ 0 + factor(Year),
+                        delta_options = list(
+                          delta_formula = ~ 0 + factor(Year),
+                          delta_sem = "sp <-> sp, spatial_sd",
+                          delta_dsem = "sp -> sp, 1, NA, 0"), # fix rho parameter at zero, so epsilon IID
+                        variable_column = 'sp_id',
+                        space_columns = c("Lon", "Lat"),
+                        time_column = 'Year',
+                        family = delta_gamma(type = "poisson-link"),
+                        spatial_graph = my_mesh ), error = function(e) conditionMessage(e))
+  tV_mod_tw = tryCatch(tinyVAST(data = sp_data,
+                      formula = Catch ~ 0 + factor(Year),
+                      sem = "sp <-> sp, spatial_sd",
+                      dsem = "sp -> sp, 1, NA, 0", # fix rho parameter at zero, so epsilon IID
+                      variable_column = 'sp_id',
+                      space_columns = c("Lon", "Lat"),
+                      time_column = 'Year',
+                      family = tweedie(link = 'log'),
+                      spatial_graph = my_mesh ), error = function(e) conditionMessage(e))
+
+  # Model order:
+  mod_order = c('tV_mod_ln', 'tV_mod_ln_pl', 'tV_mod_gm', 'tV_mod_gm_pl', 'tV_mod_tw')
+  
+  # Check sd reports:
+  # tV_mod_ln$sdrep
+  # tV_mod_ln_pl$sdrep
+  # tV_mod_gm$sdrep
+  # tV_mod_gm_pl$sdrep
+  # tV_mod_tw$sdrep
+  
+  # Check AIC:
+  aic_vec = numeric(5) # because 5 models
+  aic_vec[1] = ifelse(!is.character(tV_mod_ln), AIC(tV_mod_ln), NA)
+  aic_vec[2] = ifelse(!is.character(tV_mod_ln_pl), AIC(tV_mod_ln_pl), NA)
+  aic_vec[3] = ifelse(!is.character(tV_mod_gm), AIC(tV_mod_gm), NA)
+  aic_vec[4] = ifelse(!is.character(tV_mod_gm_pl), AIC(tV_mod_gm_pl), NA)
+  aic_vec[5] = ifelse(!is.character(tV_mod_tw), AIC(tV_mod_tw), NA)
+  
+  # Save models:
+  if(!is.character(tV_mod_ln)) save(tV_mod_ln, file = file.path(model_folder, this_sp, 'tV_mod_ln.RData'))
+  if(!is.character(tV_mod_ln_pl)) save(tV_mod_ln_pl, file = file.path(model_folder, this_sp, 'tV_mod_ln_pl.RData'))
+  if(!is.character(tV_mod_gm)) save(tV_mod_gm, file = file.path(model_folder, this_sp, 'tV_mod_gm.RData'))
+  if(!is.character(tV_mod_gm_pl)) save(tV_mod_gm_pl, file = file.path(model_folder, this_sp, 'tV_mod_gm_pl.RData'))
+  if(!is.character(tV_mod_tw)) save(tV_mod_tw, file = file.path(model_folder, this_sp, 'tV_mod_tw.RData'))
+  
+
+  # -------------------------------------------------------------------------
+  # Select best model based on AIC:
+  best_mod = NA
+  if(length(which.min(aic_vec)) > 0) {
+  
+  best_mod = mod_order[which.min(aic_vec)[1]]
+  tVModel = get(best_mod)
   
   # Check residuals
   y_ir = replicate( n = 100, expr = tVModel$obj$simulate()$y_i )
@@ -127,7 +201,7 @@ for(i in 1:n_mod_sp) {
   Index$est = Index$est_corr # replace uncorrected values by corrected?
   Index$lwr = Index[,'est'] - 1.96*Index[,'se']
   Index$upr = Index[,'est'] + 1.96*Index[,'se']
-  Index$model = 'tinyVAST'
+  Index$model = best_mod
   Index$type = 'single'
   Index$species = this_sp
   write.csv(Index, file = file.path(plot_folder, this_sp, 'Bycatch_est_ts.csv'), row.names = FALSE)
@@ -140,9 +214,12 @@ for(i in 1:n_mod_sp) {
 
   # -------------------------------------------------------------------------
   # Plot Omega 2nd component:
+  n_comps = as.vector(tVModel$tmb_inputs$tmb_data$components_e)
+  omega_slot = ifelse(n_comps == 2, 'omega2_sc', 'omega_sc')
+  epsilon_slot = ifelse(n_comps == 2, 'epsilon2_stc', 'epsilon_stc')
   plot_dat = data.frame(Lon = tVModel$spatial_graph$loc[,1], 
                         Lat = tVModel$spatial_graph$loc[,2], 
-                        omega2 = tVModel$internal$parlist$omega2_sc[,1])
+                        omega2 = tVModel$internal$parlist[[omega_slot]][,1])
   plot_dat = plot_dat %>% st_as_sf(coords = c("Lon", "Lat"), crs = 4326, remove = FALSE)
   p1 = ggplot(plot_dat) + geom_sf(aes(color = omega2), size = 2) + scale_colour_gradient2() + labs(color = 'Omega2')
   p1 = add_sf_map(p1)  
@@ -153,11 +230,11 @@ for(i in 1:n_mod_sp) {
   # -------------------------------------------------------------------------
   # Plot Epsilon 2nd component:
   tmp_df = list()
-  for(i in seq_along(all_years)) {
-    tmp_df[[i]] = data.frame(year = all_years[i],
+  for(j in seq_along(all_years)) {
+    tmp_df[[j]] = data.frame(year = all_years[j],
                              Lon = tVModel$spatial_graph$loc[,1], 
                              Lat = tVModel$spatial_graph$loc[,2], 
-                             epsilon2 = tVModel$internal$parlist$epsilon2_stc[,i,1])
+                             epsilon2 = tVModel$internal$parlist[[epsilon_slot]][,j,1])
   }
   plot_dat = bind_rows(tmp_df)
   plot_dat = plot_dat %>% st_as_sf(coords = c("Lon", "Lat"), crs = 4326, remove = FALSE)
@@ -180,5 +257,9 @@ for(i in 1:n_mod_sp) {
   p1 = p1 + facet_wrap(~ Year)
   ggsave(filename = paste0('mu_g', img_type), path = file.path(plot_folder, this_sp), plot = p1, 
          width = img_width, height = 130, units = 'mm', dpi = img_res)
+  
+  } # if at least one model converged
+  
+  cat("Model finished:", i, "-", this_sp, "-Best model:", best_mod, "\n")
   
 } # modelling loop
