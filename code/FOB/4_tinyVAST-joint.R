@@ -216,8 +216,12 @@ for(m in seq_along(n_fac_vec)) {
     nu2_vec = as.list(jtVModel$sdrep, what="Estimate")[[nu_slot]][1:(n_fac*n_sp - sum(0:(n_fac-1)))]
     Lhat_cf[lower.tri(Lhat_cf, diag=TRUE)] = nu2_vec
     Lhat_cf = rotate_pca( L_tf = Lhat_cf, order = "decreasing" )$L_tf
+    # Var explained df:
+    varex_vec = numeric(n_fac)
+    for(k in 1:n_fac) varex_vec[k] = paste0(round(100*sum(Lhat_cf[,k]^2)/sum(Lhat_cf^2),1), '%')
+    # Continue..
     dimnames(Lhat_cf) = list( cumsp_data$sp_name[1:n_sp],
-                              paste0("Factor ", 1:ncol(Lhat_cf)) )
+                              paste0("Factor ", 1:ncol(Lhat_cf), " (", varex_vec, ")") )
     load_df = as.data.frame(Lhat_cf)
     load_df$species = rownames(load_df)
     load_df = pivot_longer(load_df, cols = starts_with("Factor"), names_to = 'Factor', values_to = 'loading')
@@ -226,7 +230,7 @@ for(m in seq_along(n_fac_vec)) {
       theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
             strip.background = element_rect(fill="white")) +
       labs(y = 'Factor loading', x = NULL) +
-      facet_wrap(~ Factor, scales = 'free_y')
+      facet_wrap(~ Factor, scales = 'free_y') 
     ggsave(filename = paste0('Loading_Nu', cp, img_type), path = plot_folder, plot = p1, 
            width = img_width, height = 130, units = 'mm', dpi = img_res)
     
@@ -256,17 +260,21 @@ for(m in seq_along(n_fac_vec)) {
     theta2_vec = as.list(jtVModel$sdrep, what="Estimate")[[theta_slot]][1:(n_fac*n_sp - sum(0:(n_fac-1)))]
     Lhat_cf[lower.tri(Lhat_cf, diag=TRUE)] = theta2_vec
     Lhat_cf = rotate_pca( L_tf = Lhat_cf, order = "decreasing" )$L_tf
+    # Var explained df:
+    varex_vec = numeric(n_fac)
+    for(k in 1:n_fac) varex_vec[k] = paste0(round(100*sum(Lhat_cf[,k]^2)/sum(Lhat_cf^2),1), '%')
+    # Continue..
     dimnames(Lhat_cf) = list( cumsp_data$sp_name[1:n_sp],
-                              paste0("Factor ", 1:ncol(Lhat_cf)) )
+                              paste0("Factor ", 1:ncol(Lhat_cf), " (", varex_vec, ")") )
     load_df = as.data.frame(Lhat_cf)
     load_df$species = rownames(load_df)
     load_df = pivot_longer(load_df, cols = starts_with("Factor"), names_to = 'Factor', values_to = 'loading')
-    
+
     p1 = ggplot(data = load_df) + geom_col(aes(x = species, y = loading), position = 'dodge') +
       theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
             strip.background = element_rect(fill="white")) +
       labs(y = 'Factor loading', x = NULL) +
-      facet_wrap(~ Factor, scales = 'free_y')
+      facet_wrap(~ Factor, scales = 'free_y') 
     ggsave(filename = paste0('Loading_Theta', cp, img_type), path = plot_folder, plot = p1, 
            width = img_width, height = 130, units = 'mm', dpi = img_res)
     
