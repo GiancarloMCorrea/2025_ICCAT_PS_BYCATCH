@@ -26,7 +26,7 @@ model_folder = file.path('models', this_type, 'tinyVAST')
 dir.create(model_folder, recursive = TRUE, showWarnings = FALSE)
 
 # N sp to build models
-n_mod_sp = 35 # model the first N species
+n_mod_sp = 40 # model the first N species
 
 # -------------------------------------------------------------------------
 # Read data in:
@@ -43,7 +43,7 @@ tmp_data = mod_data %>% dplyr::filter(sp_name %in% cumsp_data$sp_name[1])
 
 # -------------------------------------------------------------------------
 # Make mesh (will be the same for all sp):
-my_mesh = fm_mesh_2d( tmp_data[,c('Lon', 'Lat')], cutoff = 1 )
+my_mesh = fm_mesh_2d( tmp_data[,c('Lon', 'Lat')], cutoff = 2 )
 p1 = ggplot() + geom_fm(data = my_mesh)
 ggsave(paste0('map_mesh', img_type), path = file.path(plot_folder), 
        plot = p1, width = img_width*0.5, height = 80, units = 'mm', dpi = img_res)
@@ -309,7 +309,7 @@ for(i in 1:n_mod_sp) {
   remove(list = c('tVModel')) # remove objects just in case
   
   # Check if model converged
-  mod_exist = exists(file.path(model_folder, this_sp, 'tVModel.RData'))
+  mod_exist = file.exists(file.path(model_folder, this_sp, 'tVModel.RData'))
   
   if(mod_exist) {
   # Load best model:

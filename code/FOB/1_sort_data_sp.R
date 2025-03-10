@@ -92,6 +92,3 @@ for(j in seq_along(all_sp)) {
   cat('Done with: ', all_sp[j], '\n')
   
 }
-
-
-

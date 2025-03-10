@@ -312,7 +312,7 @@ for(i in 1:n_mod_sp) {
   remove(list = c('tVModel')) # remove objects just in case
   
   # Check if model converged
-  mod_exist = exists(file.path(model_folder, this_sp, 'tVModel.RData'))
+  mod_exist = file.exists(file.path(model_folder, this_sp, 'tVModel.RData'))
   
   if(mod_exist) {
   # Load best model:
