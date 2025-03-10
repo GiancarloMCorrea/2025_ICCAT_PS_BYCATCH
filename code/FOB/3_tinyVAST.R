@@ -43,7 +43,7 @@ tmp_data = mod_data %>% dplyr::filter(sp_name %in% cumsp_data$sp_name[1])
 
 # -------------------------------------------------------------------------
 # Make mesh (will be the same for all sp):
-my_mesh = fm_mesh_2d( tmp_data[,c('Lon', 'Lat')], cutoff = 2 )
+my_mesh = fm_mesh_2d( tmp_data[,c('Lon', 'Lat')], cutoff = 1 )
 p1 = ggplot() + geom_fm(data = my_mesh)
 ggsave(paste0('map_mesh', img_type), path = file.path(plot_folder), 
        plot = p1, width = img_width*0.5, height = 80, units = 'mm', dpi = img_res)
@@ -211,10 +211,34 @@ for(i in 1:n_mod_sp) {
       height = 100, res = img_res, units = 'mm')
   plot(res)
   dev.off()
-  
+
+  # -------------------------------------------------------------------------
+  # Produce tables for parameters and convergence 
+  n_comps = as.vector(tVModel$tmb_inputs$tmb_data$components_e)
+  ParHat = tVModel$obj$env$parList()
+  SE = as.list( tVModel$sdrep, report=FALSE, what="Std. Error")
+  if(n_comps == 1) { parNames = c('alpha_j', 'beta_z', 'theta_z', 
+                                  'log_sigma', 'log_kappa') }
+  if(n_comps == 2) { parNames = c('alpha_j', 'beta_z', 'theta_z', 
+                                  'alpha2_j', 'beta2_z', 'theta2_z', 
+                                  'log_sigma', 'log_kappa') }
+  # Get estimates :
+  save_coeff = list()
+  for(k in seq_along(parNames)) {
+    tmp_df = data.frame(parameter = names(ParHat[parNames[k]]), 
+                        estimate = ParHat[parNames[k]][[1]],
+                        se = SE[parNames[k]][[1]])
+    tmp_df = tmp_df %>% mutate(zvalue = estimate/se,
+                               pvalue = pnorm(-abs(zvalue))*2)
+    save_coeff[[k]] = tmp_df
+  }
+  par_df = bind_rows(save_coeff)
+  par_df$max_grad = max(abs(tVModel$obj$gr()))
+  par_df$convergence = tVModel$opt$convergence
+  write.csv(par_df, file = file.path(model_folder, this_sp, 'parameter_estimates.csv'), row.names = FALSE)
+    
   # -------------------------------------------------------------------------
   # Plot Omega by component:
-  n_comps = as.vector(tVModel$tmb_inputs$tmb_data$components_e)
   if(n_comps == 1) omega_slot_vec = 'omega_sc'
   if(n_comps == 2) omega_slot_vec = c('omega_sc', 'omega2_sc')
   for(cp in seq_along(omega_slot_vec)) {
@@ -304,7 +328,6 @@ for(i in 1:n_mod_sp) {
   Index$est = Index$est_corr # replace uncorrected values by corrected?
   Index$lwr = Index[,'est'] - 1.96*Index[,'se']
   Index$upr = Index[,'est'] + 1.96*Index[,'se']
-  Index$model = best_mod
   Index$type = 'single'
   Index$species = this_sp
   write.csv(Index, file = file.path(plot_folder, this_sp, 'Bycatch_est_ts.csv'), row.names = FALSE)

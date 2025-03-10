@@ -30,7 +30,7 @@ glimpse(data_weka)
 # Define columns to be used:
 sp_id_col = grep(pattern = 'tons_|number_|weight_', x = colnames(data_weka))
 var_columns = c('ocean_code', 'vessel_code', 'flag_country', 'trip_start_date', 'trip_end_date',
-               'observation_date', 'observation_time', 'latitude', 'longitude', 'sst', 
+               'observation_date', 'observation_time', 'latitude', 'longitude',  
                'school_type', 'sunrise_diference')
 var_id_col = which(colnames(data_weka) %in% var_columns)
 my_data = data_weka %>% select(all_of(c(var_id_col, sp_id_col)))
