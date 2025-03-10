@@ -74,3 +74,102 @@ plot_time_predictions = function(plot_data, obs_data = NULL, var_x, var_y,
   
 }
 
+
+# -------------------------------------------------------------------------
+# Function to make the time term:
+make_time_term = function(n_sp, n_fac, par_lab = 'a', save_folder = NULL) {
+  
+  tm_p1 = NULL
+  for(k in 1:n_fac){
+    tm_p1 = c(tm_p1, 
+              paste(
+                rep(paste0('f', k), times = n_sp-k+1),
+                (1+k-1):n_sp,
+                sep = ' -> '))
+  }
+  tm_p1 = paste(tm_p1, paste0(par_lab, 1:(n_sp*n_fac - sum(0:(n_fac-1)))), sep = ', 0, ')
+  tm_p2 = paste0(
+    paste(paste0('f', 1:n_fac), paste0('f', 1:n_fac), sep = ' -> '),
+    ', 1, NA, 1'
+  )
+  tm_p3 = paste0(
+    paste(1:n_sp, 1:n_sp, sep = ' <-> '),
+    ', 0, NA, 0'
+  )
+  tm_p4 = paste(
+    paste(paste0('f', 1:n_fac), paste0('f', 1:n_fac), sep = ' <-> '),
+    paste0('sd_', par_lab, '_f', 1:n_fac),
+    sep = ', 0, '
+  )
+  tm_file = c(tm_p1, tm_p2, tm_p3, tm_p4)
+  if(!is.null(save_folder)) writeLines(tm_file, file.path(save_folder, paste0("time_input_sp", n_sp, ".txt")))
+  tm_mod = paste0("\n  ", paste(tm_file, collapse = '\n  '), "\n")
+  return(tm_mod)
+  
+}
+
+# -------------------------------------------------------------------------
+# Function to make the space term:
+make_space_term = function(n_sp, n_fac, par_lab = 'o', save_folder = NULL) {
+  
+  sem_p1 = NULL
+  for(k in 1:n_fac){
+    sem_p1 = c(sem_p1, 
+               paste(
+                 rep(paste0('f', k), times = n_sp-k+1),
+                 (1+k-1):n_sp,
+                 sep = ' -> '))
+  }
+  sem_p1 = paste(sem_p1, paste0(par_lab, 1:(n_sp*n_fac - sum(0:(n_fac-1)))), sep = ', ')
+  sem_p2 = paste(
+    paste(paste0('f', 1:n_fac), paste0('f', 1:n_fac), sep = ' <-> '),
+    paste0('sd_', par_lab, '_f', 1:n_fac),
+    sep = ', '
+  )
+  sem_p3 = paste0(
+    paste(1:n_sp, 1:n_sp, sep = ' <-> '),
+    ', NA, 0'
+  )
+  sem_file = c(sem_p1, sem_p2, sem_p3)
+  if(!is.null(save_folder)) writeLines(sem_file, file.path(save_folder, paste0("sem_input_sp", n_sp, ".txt")))
+  sem_mod = paste0("\n  ", paste(sem_file, collapse = '\n  '), "\n")
+  return(sem_mod)
+  
+}
+
+# -------------------------------------------------------------------------
+# Function to make the spacetime term:
+make_spacetime_term = function(n_sp, n_fac, par_lab = 'e', save_folder = NULL) {
+  
+  dsem_p1 = NULL
+  for(k in 1:n_fac){
+    dsem_p1 = c(dsem_p1, 
+                paste(
+                  rep(paste0('f', k), times = n_sp-k+1),
+                  (1+k-1):n_sp,
+                  sep = ' -> '))
+  }
+  dsem_p1 = paste(dsem_p1, paste0(par_lab, 1:(n_sp*n_fac - sum(0:(n_fac-1)))), sep = ', 0, ')
+  dsem_p2 = paste0(
+    paste(paste0('f', 1:n_fac), paste0('f', 1:n_fac), sep = ' -> '),
+    ', 1, NA, 0'
+  )
+  dsem_p3 = paste0(
+    paste(1:n_sp, 1:n_sp, sep = ' -> '),
+    ', 1, NA, 0'
+  )
+  dsem_p4 = paste(
+    paste(paste0('f', 1:n_fac), paste0('f', 1:n_fac), sep = ' <-> '),
+    paste0('sd_', par_lab, '_f', 1:n_fac),
+    sep = ', 0, '
+  )
+  dsem_p5 = paste0(
+    paste(1:n_sp, 1:n_sp, sep = ' <-> '),
+    ', 0, NA, 0'
+  )
+  dsem_file = c(dsem_p1, dsem_p2, dsem_p3, dsem_p4, dsem_p5)
+  if(!is.null(save_folder)) writeLines(dsem_file, file.path(save_folder, paste0("dsem_input_sp", n_sp, ".txt")))
+  dsem_mod = paste0("\n  ", paste(dsem_file, collapse = '\n  '), "\n")
+  return(dsem_mod)
+  
+}

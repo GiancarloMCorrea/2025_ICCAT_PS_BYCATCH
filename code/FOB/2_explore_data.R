@@ -35,7 +35,8 @@ n_sp = 25 # first N species
 plot_data = weight_data %>% group_by(Year, sp_name) %>% summarise(Catch = sum(Catch))
 cumsp_data = plot_data %>% group_by(sp_name) %>% summarise(Catch = sum(Catch))
 cumsp_data = arrange(cumsp_data, desc(Catch))
-write.csv(cumsp_data %>% select(sp_name), file = file.path(data_folder, 'cumsp_data_weight.csv'), row.names = FALSE)
+cumsp_data = cumsp_data %>% dplyr::filter(Catch > 0)
+write.csv(cumsp_data, file = file.path(data_folder, 'cumsp_data_weight.csv'), row.names = FALSE)
 cumsp_data = cumsp_data[1:n_sp, ]
 plot_data = plot_data %>% dplyr::filter(sp_name %in% cumsp_data$sp_name) %>% mutate(sp_name = factor(sp_name, levels = cumsp_data$sp_name))
 
@@ -51,7 +52,8 @@ ggsave(paste0('sp_dom_weight', img_type), path = plot_folder, plot = p1,
 plot_data = numbers_data %>% group_by(Year, sp_name) %>% summarise(Catch = sum(Catch))
 cumsp_data = plot_data %>% group_by(sp_name) %>% summarise(Catch = sum(Catch))
 cumsp_data = arrange(cumsp_data, desc(Catch))
-write.csv(cumsp_data %>% select(sp_name), file = file.path(data_folder, 'cumsp_data_numbers.csv'), row.names = FALSE)
+cumsp_data = cumsp_data %>% dplyr::filter(Catch > 0)
+write.csv(cumsp_data, file = file.path(data_folder, 'cumsp_data_numbers.csv'), row.names = FALSE)
 cumsp_data = cumsp_data[1:n_sp, ]
 plot_data = plot_data %>% dplyr::filter(sp_name %in% cumsp_data$sp_name) %>% mutate(sp_name = factor(sp_name, levels = cumsp_data$sp_name))
 
