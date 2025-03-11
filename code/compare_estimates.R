@@ -29,7 +29,7 @@ for(i in seq_along(set_types)) {
   # Start extracting bycatch estimates by species:
   save_df = list()
   for(k in seq_along(all_files)) {
-    tmp_file = file.path('figures', set_types[i], 'tinyVAST', all_species[k], 'Bycatch_est_ts.csv')
+    tmp_file = file.path('figures', set_types[i], 'tinyVAST', all_files[k], 'Bycatch_est_ts.csv')
     cond_file = file.exists(tmp_file)
     if(cond_file) {
       tmp_df = read.csv(tmp_file)
