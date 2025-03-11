@@ -74,14 +74,19 @@ for(i in 1:n_mod_sp) {
   pres_data = sp_data %>% mutate(presence = as.factor(if_else(Catch > 0, 1, 0)))
   
   # Check sum catch by year:
-  plot_dat = pres_data %>% group_by(Year) %>% summarise(Catch = sum(Catch), prop = (length(which(presence == 1))/n())*100)
+  plot_dat = pres_data %>% group_by(Year) %>% summarise(Catch = sum(Catch), 
+                                                        n_pos_sets = length(which(presence == 1)),
+                                                        prop = (n_pos_sets/n())*100)
   tmp_zero = plot_dat %>% arrange(Year)
   zero_years = which(tmp_zero$prop == 0) # to fix alphas for years with zero catch
   png(file = file.path(plot_folder, this_sp, 'catch_prop_ts.png'), width = img_width*0.75, 
-      height = 150, res = img_res, units = 'mm')
-  par(mfrow = c(2,1))
+      height = 180, res = img_res, units = 'mm')
+  par(mfrow = c(3,1))
   par(mar = c(3, 4, 0.5, 0.5))
   plot(plot_dat$Year, plot_dat$Catch, type = 'l', xlab = '', ylab = 'Catch (t)', ylim = c(0, max(plot_dat$Catch)*1.05))
+  par(mar = c(3, 4, 0.5, 0.5))
+  plot(plot_dat$Year, plot_dat$n_pos_sets, type = 'l', xlab = '', ylab = 'N positive sets', ylim = c(0, max(plot_dat$n_pos_sets)*1.05))
+  abline(h = 0, lty = 2)
   par(mar = c(3, 4, 0.5, 0.5))
   plot(plot_dat$Year, plot_dat$prop, type = 'l', xlab = '', ylab = 'Positive sets (%)', ylim = c(0, max(plot_dat$prop)*1.05))
   abline(h = 0, lty = 2)
@@ -105,6 +110,8 @@ for(i in 1:n_mod_sp) {
   sp_data = sp_data %>% mutate(sp_id = 'sp')
   sp_data = sp_data %>% mutate(fyear = factor(Year))
   sp_data = as.data.frame(sp_data)
+  # sp_data = sp_data %>% dplyr::filter(!Year %in% tmp_zero$Year[zero_years]) %>%
+  #             mutate(fyear = factor(Year))
   
   # Fit tinyVAST model
   tV_mod_ln = tryCatch(tinyVAST( data = sp_data,

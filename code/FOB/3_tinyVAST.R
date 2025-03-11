@@ -1,4 +1,4 @@
-# remotes::install_github(repo = "vast-lib/tinyVAST", ref='dev')
+# devtools::install_github("vast-lib/tinyVAST", dependencies = TRUE)
 rm(list = ls())
 # -------------------------------------------------------------------------
 library(tinyVAST)
