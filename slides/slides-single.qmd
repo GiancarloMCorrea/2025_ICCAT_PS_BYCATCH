@@ -1,0 +1,337 @@
+---
+title: "Bycatch estimates in the Spanish purse-seine tuna fishery of the eastern Atlantic Ocean"
+author: Giancarlo M. Correa, Jon Ruiz, add coauthors
+embed-resources: false
+highlight-style: "a11y-dark"
+format: azti-revealjs
+revealjs-plugins:
+  - pointer
+include-in-header:
+  - text: |
+      <link rel = "shortcut icon" href = "azti.svg" />
+title-slide-attributes:
+    data-background-color: "#000000"
+csl: ../elsevier-harvard.csl
+execute:
+  echo: false
+  warning: false
+bibliography: ../references.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, 
+                      verbose = FALSE,
+                      message = FALSE, 
+                      warning = FALSE)
+```
+
+```{r}
+# remotes::install_github("wmoldham/rbbt") # temporarily, until error is fixed
+require(knitr)
+require(jpeg)
+require(rbbt)
+require(dplyr)
+require(flextable)
+require(kableExtra)
+options(knitr.kable.NA = '')
+```
+
+```{r}
+# remotes::install_github("wmoldham/rbbt") # temporarily, until error is fixed
+require(knitr)
+require(rbbt)
+require(dplyr)
+require(flextable)
+# This will automatically update the BIB file:
+keys = rbbt::bbt_detect_citations('slides-single.qmd')
+bbt_ignore = keys[grepl("fig-|tbl-|eq-|sec-", keys)]
+rbbt::bbt_update_bib(path_rmd = 'slides-single.qmd', 
+                     ignore = bbt_ignore, overwrite = T, translator = "bibtex")
+```
+
+# Methods
+
+## Modelling approach
+
+We used the *tinyVAST* R package [@thorsonTinyVASTPackageExpressive2024] to implement univariate geostatistical spatiotemporal models for *each taxon* and for each *set type*.
+
+$$\mathbb{E}[y_{s,t}] = \mu_{s,t}, \\ u_{s,t}=g^{-1}(\eta_{s,t}), \\ \eta_{s,t}=X_{s,t} \beta + \omega_s + \epsilon_{s,t}$$
+
+## Modelling approach
+
+Where $\omega_s$ and $\epsilon_{s,t}$ are the spatial and spatiotemporal Gaussian random fields (GRF), respectively.
+
+$$\omega \sim MVNormal(0,\Sigma_\omega) \\ \epsilon_t \sim MVNormal(0,\Sigma_\epsilon)$$
+
+Where $\Sigma_\omega$ and $\Sigma_\epsilon$ are the covariance matrices, constrained by some function (e.g., Matérn) that defines the rate at which spatial covariance decays with distance.
+
+## Matérn covariance function
+
+Most flexible option:
+
+$$\phi(s_j,s_k)=\frac{\sigma^2_m}{2^{\nu-1}\Gamma(\nu)}(\kappa \| h\|)^\nu K_\nu(\kappa \| h\|)$$
+
+Where $\| h\|$ is the Euclidean distance between spatial points $s_j$ and $s_k$, $\sigma^2_m$ is the marginal variance, $K_\nu$ represent the modified Bessel function of the second kind, $\kappa$ represents the spatial decorrelation rate, and $\nu$ controls the smoothness of the covariance function (commonly assumed $\nu=1$).
+
+## Modelling approach
+
+<br>
+
+![@Anderson2024](images/example_GRF.png){fig-align="center"}
+
+## Covariates
+
+- Year: factor
+- Season: factor (not explored yet)
+- Longitude: continuous
+- Latitude: continuous
+- Aggregated catch of SKJ, BET, YFT: continuous (not explored yet)
+- Temperature: continuous (not explored yet)
+- Other environmental variables?
+
+## Families
+
+- *delta-lognormal*: logit-log link
+- *delta-lognormal* (Poisson-link): log-log link [@thorsonThreeProblemsConventional2018]
+- *delta-gamma*: logit-log link
+- *delta-gamma* (Poisson-link): log-log link
+- *tweedie*: log link
+
+## Model configuration
+
+For *tweedie* model: 
+
+$$\sim Year + \omega_s + \epsilon_{s,t}$$
+
+For delta models:
+
+$$\sim Year + \omega_s + \epsilon_{s,t}$$
+
+$$\sim Year + \omega_s + \epsilon_{s,t}$$
+
+Find best family based on *AIC*.
+
+## Covariates selection
+
+<br>
+
+Not done yet. Perform 10-fold cross-validation (only using best family) to select variables.
+
+# FOB models
+
+## Exploration
+
+![](../figures/FOB/obs_num_y-m.png){fig-align="center"}
+
+## Exploration
+
+![](../figures/FOB/obs_map_sets_seas.png){fig-align="center"}
+
+## Exploration
+
+![](../figures/FOB/obs_n-sp_set.png){fig-align="center"}
+
+## Exploration
+
+![](../figures/FOB/obs_prop-pos_set.png){fig-align="center"}
+
+## Mesh
+
+:::: {.columns}
+
+::: {.column width="50%"}
+![](../figures/FOB/tinyVAST/map_mesh.png){fig-align="center"}
+:::
+
+::: {.column width="50%"}
+![](../figures/FOB/tinyVAST/map_mesh_obs.png){fig-align="center"}
+:::
+
+::::
+
+## Katsuwonus pelamis
+
+Observed data:
+
+![](../figures/FOB/tinyVAST/Katsuwonus pelamis/obs_map_presence.png){fig-align="center"}
+
+## Katsuwonus pelamis
+
+Best family (for most taxa): *delta-lognormal* (Poisson-link)
+
+Residual checking:
+
+![](../figures/FOB/tinyVAST/Katsuwonus pelamis/resid_check.png){fig-align="center"}
+
+## Katsuwonus pelamis
+
+Spatial term ($\omega$) for each component:
+
+:::: {.columns}
+
+::: {.column width="50%"}
+![](../figures/FOB/tinyVAST/Katsuwonus pelamis/omega1.png){fig-align="center"}
+:::
+
+::: {.column width="50%"}
+![](../figures/FOB/tinyVAST/Katsuwonus pelamis/omega2.png){fig-align="center"}
+:::
+
+::::
+
+## Katsuwonus pelamis
+
+Spatiotemporal term (predictor 1):
+
+![](../figures/FOB/tinyVAST/Katsuwonus pelamis/epsilon1.png){fig-align="center"}
+
+## Katsuwonus pelamis
+
+Spatiotemporal term (predictor 2):
+
+![](../figures/FOB/tinyVAST/Katsuwonus pelamis/epsilon2.png){fig-align="center"}
+
+## Katsuwonus pelamis
+
+Predictions:
+
+![](../figures/FOB/tinyVAST/Katsuwonus pelamis/mu_g.png){fig-align="center"}
+
+## Katsuwonus pelamis
+
+Bycatch estimates:
+
+![](../figures/FOB/tinyVAST/Katsuwonus pelamis/Bycatch_est_ts.png){fig-align="center"}
+
+## All taxa
+
+Estimates for the first 35 taxa:
+
+![](../figures/FOB/estimates_all_taxa.png){fig-align="center"}
+
+# FSC models
+
+## Exploration
+
+![](../figures/FSC/obs_num_y-m.png){fig-align="center"}
+
+## Exploration
+
+![](../figures/FSC/obs_map_sets_seas.png){fig-align="center"}
+
+## Exploration
+
+![](../figures/FSC/obs_n-sp_set.png){fig-align="center"}
+
+## Exploration
+
+![](../figures/FSC/obs_prop-pos_set.png){fig-align="center"}
+
+## Mesh
+
+:::: {.columns}
+
+::: {.column width="50%"}
+![](../figures/FSC/tinyVAST/map_mesh.png){fig-align="center"}
+:::
+
+::: {.column width="50%"}
+![](../figures/FSC/tinyVAST/map_mesh_obs.png){fig-align="center"}
+:::
+
+::::
+
+## Carcharhinus falciformis
+
+Observed data:
+
+![](../figures/FSC/tinyVAST/Carcharhinus falciformis/obs_map_presence.png){fig-align="center"}
+
+## Carcharhinus falciformis
+
+Best family (for most taxa): *delta-lognormal* (Poisson-link)
+
+Residual checking:
+
+![](../figures/FSC/tinyVAST/Carcharhinus falciformis/resid_check.png){fig-align="center"}
+
+## Carcharhinus falciformis
+
+Spatial term ($\omega$) for each component:
+
+:::: {.columns}
+
+::: {.column width="50%"}
+![](../figures/FSC/tinyVAST/Carcharhinus falciformis/omega1.png){fig-align="center"}
+:::
+
+::: {.column width="50%"}
+![](../figures/FSC/tinyVAST/Carcharhinus falciformis/omega2.png){fig-align="center"}
+:::
+
+::::
+
+## Carcharhinus falciformis
+
+Spatiotemporal term (predictor 1):
+
+![](../figures/FSC/tinyVAST/Carcharhinus falciformis/epsilon1.png){fig-align="center"}
+
+## Carcharhinus falciformis
+
+Spatiotemporal term (predictor 2):
+
+![](../figures/FSC/tinyVAST/Carcharhinus falciformis/epsilon2.png){fig-align="center"}
+
+## Carcharhinus falciformis
+
+Predictions:
+
+![](../figures/FSC/tinyVAST/Carcharhinus falciformis/mu_g.png){fig-align="center"}
+
+## Carcharhinus falciformis
+
+Bycatch estimates:
+
+![](../figures/FSC/tinyVAST/Carcharhinus falciformis/Bycatch_est_ts.png){fig-align="center"}
+
+## All taxa
+
+Estimates for the first 24 taxa:
+
+![](../figures/FSC/estimates_all_taxa.png){fig-align="center"}
+
+## Discussion
+
+- Covariates to be explored: catch tropicals, sst, season (?)
+- TODO: Covariates selection (cross-validation)
+- TODO: Improve estimates for taxa with few observations (or exclude them?)
+
+## Discussion
+
+Other estimation methods (future research, @yinRoadmapGeneratingAnnual2024):
+
+  * Mean estimator
+  * Stratified mean estimator
+  * Catch-ratio estimators
+  * Nearest neighbors
+  * Generalized linear models
+  * Random forest
+  * Spatiotemporal model
+
+## Thank you {background-color="black"}
+
+<br> <br>
+
+<center>
+
+![](__AZTI_secundario_BlancoAmarillo.png){width="50%"}
+
+<br>
+
+[Contact:]{style="font-size:40px"} <br> [gmoron\@azti.es](mailto:gmoron@azti.es){style="font-size:40px"}
+
+</center>
+
+## References
+

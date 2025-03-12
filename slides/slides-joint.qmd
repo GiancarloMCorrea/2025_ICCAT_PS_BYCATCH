@@ -1,0 +1,186 @@
+---
+title: "Identifying taxa complexes in the bycatch of the Spanish purse-seine tuna fishery in the eastern Atlantic Ocean"
+author: Giancarlo M. Correa, Jon Ruiz, add coauthors
+embed-resources: false
+highlight-style: "a11y-dark"
+format: azti-revealjs
+revealjs-plugins:
+  - pointer
+include-in-header:
+  - text: |
+      <link rel = "shortcut icon" href = "azti.svg" />
+title-slide-attributes:
+    data-background-color: "#000000"
+csl: ../elsevier-harvard.csl
+execute:
+  echo: false
+  warning: false
+bibliography: ../references.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, 
+                      verbose = FALSE,
+                      message = FALSE, 
+                      warning = FALSE)
+```
+
+```{r}
+# remotes::install_github("wmoldham/rbbt") # temporarily, until error is fixed
+require(knitr)
+require(jpeg)
+require(rbbt)
+require(dplyr)
+require(flextable)
+require(kableExtra)
+options(knitr.kable.NA = '')
+```
+
+```{r}
+# remotes::install_github("wmoldham/rbbt") # temporarily, until error is fixed
+require(knitr)
+require(rbbt)
+require(dplyr)
+require(flextable)
+# This will automatically update the BIB file:
+keys = rbbt::bbt_detect_citations('slides-single.qmd')
+bbt_ignore = keys[grepl("fig-|tbl-|eq-|sec-", keys)]
+rbbt::bbt_update_bib(path_rmd = 'slides-single.qmd', 
+                     ignore = bbt_ignore, overwrite = T, translator = "bibtex")
+```
+
+# Methods
+
+## Modelling approach
+
+We used the *tinyVAST* R package [@thorsonTinyVASTPackageExpressive2024] to implement joint dynamic geostatistical spatiotemporal models for each *set type*.
+
+<br>
+
+We used a delta lognormal with Poisson link family. 
+
+## Modelling approach
+
+For each linear predictor:
+
+$$p(s,c,t) = \mu(c)+\sum^{n_f}_{f=1}L_\delta (c,f)\delta(t,f) + \sum^{n_f}_{f=1}L_\omega (c,f)\omega (s,f)$$
+
+Where $s$ represents the location in space, $c$ represent taxa, $f$ represents the factors, and $t$ represents years. Temporal variation is represented by $\delta (t,f)$. $L_\delta$ and $L_\omega$ are the loading matrices.
+
+## Modelling approach
+
+Temporal variation follows a random walk:
+
+$$
+\delta_{t,f} = \begin{cases}
+  \zeta(t,f)  & t=1 \\
+  \delta(t-1,f)+\zeta(t,f) & t>1
+\end{cases}
+$$
+
+Where $\zeta(t,f)$ follows a standard normal distribution.
+
+## Modelling approach
+
+<br>
+
+We started modelling two factors ($n_f = 2$), and then successively increase the number of factors until the final factor explains less than 5% of total explained variance.
+
+# FOB model
+
+## Mesh
+
+:::: {.columns}
+
+::: {.column width="50%"}
+![](../figures/FOB/tinyVAST-multi/map_mesh.png){fig-align="center"}
+:::
+
+::: {.column width="50%"}
+![](../figures/FOB/tinyVAST-multi/map_mesh_obs.png){fig-align="center"}
+:::
+
+::::
+
+## Time variation ($n_f = 3$)
+
+For model component 1:
+
+![](../figures/FOB/tinyVAST-multi/3/delta1.png){fig-align="center"}
+
+## Time variation ($n_f = 3$)
+
+For model component 1:
+
+![](../figures/FOB/tinyVAST-multi/3/Loading_Nu1.png){fig-align="center"}
+
+## Time variation ($n_f = 3$)
+
+For model component 1:
+
+:::: {.columns}
+
+::: {.column width="50%"}
+![](../figures/FOB/tinyVAST-multi/3/Corrplot_Nu1.png){fig-align="center"}
+:::
+
+::: {.column width="50%"}
+![](../figures/FOB/tinyVAST-multi/3/Cluster_Nu1.png){fig-align="center"}
+:::
+
+::::
+
+## Spatial term ($n_f = 3$)
+
+For model component 1:
+
+![](../figures/FOB/tinyVAST-multi/3/omega1.png){fig-align="center"}
+
+## Spatial term ($n_f = 3$)
+
+For model component 1:
+
+![](../figures/FOB/tinyVAST-multi/3/Loading_Theta1.png){fig-align="center"}
+
+## Spatial term ($n_f = 3$)
+
+For model component 1:
+
+:::: {.columns}
+
+::: {.column width="50%"}
+![](../figures/FOB/tinyVAST-multi/3/Corrplot_Theta1.png){fig-align="center"}
+:::
+
+::: {.column width="50%"}
+![](../figures/FOB/tinyVAST-multi/3/Cluster_Theta1.png){fig-align="center"}
+:::
+
+::::
+
+
+## Discussion
+
+- No need to use all taxa
+- Remove discard species (?)
+- TODO: do analysis for FSC fleet
+- TODO: Combine component 1 and 2 into a single analysis to examine species relationships
+- TODO: Test Tweedie distribution
+
+
+## Thank you {background-color="black"}
+
+<br> <br>
+
+<center>
+
+![](__AZTI_secundario_BlancoAmarillo.png){width="50%"}
+
+<br>
+
+[Contact:]{style="font-size:40px"} <br> [gmoron\@azti.es](mailto:gmoron@azti.es){style="font-size:40px"}
+
+</center>
+
+## References
+

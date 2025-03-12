@@ -1,0 +1,56 @@
+@article{Anderson2024,
+  title = {{{sdmTMB}}: {{An R}} Package for Fast, Flexible, and User-Friendly Generalized Linear Mixed Effects Models with Spatial and Spatiotemporal Random Fields},
+  author = {Anderson, Sean C. and Ward, Eric J. and English, Philina A. and Barnett, Lewis A. K. and Thorson, James T.},
+  year = {2024},
+  journal = {bioRxiv : the preprint server for biology},
+  eprint = {https://www.biorxiv.org/content/early/2024/02/05/2022.03.24.485545.full.pdf},
+  publisher = {Cold Spring Harbor Laboratory},
+  doi = {10.1101/2022.03.24.485545},
+  abstract = {Geostatistical spatial or spatiotemporal data are common across scientific fields. However, appropriate models to analyse these data, such as generalised linear mixed effects models (GLMMs) with Gaussian Markov random fields (GMRFs), are computationally intensive and challenging for many users to implement. Here, we introduce the R package sdmTMB, which extends the flexible interface familiar to users of lme4, glmmTMB, and mgcv to include spatial and spatiotemporal latent GMRFs using an SPDE-(stochastic partial differential equation) based approach. SPDE matrices are constructed with fmesher and estimation is conducted via maximum marginal likelihood with TMB or via Bayesian inference with tmbstan and rstan. We describe the model and explore case studies that illustrate sdmTMB's flexibility in implementing penalised smoothers, non-stationary processes (time-varying and spatially varying coefficients), hurdle models, cross-validation and anisotropy (directionally dependent spatial correlation). Finally, we compare the functionality, speed, and interfaces of related software, demonstrating that sdmTMB can be an order of magnitude faster than R-INLA. We hope sdmTMB's accessible interface will help open this useful class of models to a wider field of geostatistical analysts.Competing Interest StatementThe authors have declared no competing interest.},
+  elocation-id = {2022.03.24.485545}
+}
+
+@article{thorsonThreeProblemsConventional2018,
+  title = {Three Problems with the Conventional Delta-Model for Biomass Sampling Data, and a Computationally Efficient Alternative},
+  author = {Thorson, James T.},
+  year = {2018},
+  month = sep,
+  journal = {Canadian Journal of Fisheries and Aquatic Sciences},
+  volume = {75},
+  number = {9},
+  pages = {1369--1382},
+  issn = {0706-652X, 1205-7533},
+  doi = {10.1139/cjfas-2017-0266},
+  urldate = {2025-03-03},
+  abstract = {Ecologists often analyse biomass sampling data that result in many zeros, where remaining samples can take any positive real number. Samples are often analysed using a ``delta-model'' that combines two separate generalized linear models, GLMs (for encounter probability and positive catch rates), or less often using a compound Poisson-gamma (CPG) distribution that is computationally expensive. I discuss three theoretical problems with the conventional delta-model: difficulty interpreting covariates for encounter probability, the assumed independence of the two GLMs, and the biologically implausible form when eliminating covariates for either GLM. I then derive an alternative ``Poisson-link model'' that solves these problems. To illustrate, I use biomass samples for 113 fish populations to show that the Poisson-link model improves fit (and decreases residual spatial variation) for {$>$}80\% of populations relative to the conventional delta-model. A simulation experiment illustrates that CPG and Poisson-link models estimate covariate effects that are similar and biologically interpretable. I therefore recommend the Poisson-link model as a useful alternative to the conventional delta-model with similar properties to the CPG distribution.},
+  copyright = {http://www.nrcresearchpress.com/page/about/CorporateTextAndDataMining},
+  langid = {english},
+  file = {C:\Users\gmoron\Zotero\storage\E6YCBBY9\Thorson - 2018 - Three problems with the conventional delta-model f.pdf}
+}
+
+@article{thorsonTinyVASTPackageExpressive2024,
+  title = {{{tinyVAST}}: {{R}} Package with an Expressive Interface to Specify Lagged and Simultaneous Effects in Multivariate Spatio-Temporal Models},
+  author = {Thorson, James T and Anderson, Sean C. and Goddard, Pamela and Rooper, Christopher N.},
+  year = {2024},
+  journal = {arXiv Statistics},
+  doi = {10.48550/arXiv.2401.10193}
+}
+
+@article{yinRoadmapGeneratingAnnual2024,
+  title = {A Roadmap for Generating Annual Bycatch Estimates from Sparse At-Sea Observer Data},
+  author = {Yin, Yihao and Bowlby, Heather D and Beno{\^i}t, Hugues P},
+  editor = {Jardim, Ernesto},
+  year = {2024},
+  month = nov,
+  journal = {ICES Journal of Marine Science},
+  volume = {81},
+  number = {9},
+  pages = {1850--1867},
+  issn = {1054-3139, 1095-9289},
+  doi = {10.1093/icesjms/fsae110},
+  urldate = {2025-03-11},
+  abstract = {Abstract             To support ecosystem-based fisheries management, monitoring data from at-sea observer (ASO) programs should be leveraged to understand the impact of fisheries on discarded species (bycatch). Available techniques to estimate fishery-scale quantities from observations range from simple mean estimators to more complex spatiotemporal models, each making assumptions with differing degrees of support. However, the resulting implementation and analytical trade-offs are rarely discussed when applying these techniques in practice. Using blue shark (Prionace glauca) bycatch in the Canadian pelagic longline fishery as a case study, we evaluated the performance of seven contrasting approaches to estimating total annual discard amounts and assessed their trade-offs in application. Results demonstrated that simple approaches such as mean estimator and nearest neighbors are feasible to implement and can be as efficient for prediction as complex models such as random forest and mixed-effects models. The traditionally used catch-ratio estimator consistently underperformed among all tested models, likely due to misspecified correlative relationships between target and bycatch species. Overall, efforts in model-based approaches were rewarded with very small gains in predictive ability, suggesting that such models relying on environmental, biological, spatial, and/or temporal patterns to improve prediction of bycatch may lack sufficient foundation in data-limited contexts.},
+  copyright = {https://creativecommons.org/licenses/by/4.0/},
+  langid = {english},
+  file = {C:\Users\gmoron\Zotero\storage\4A4H3KV6\Yin et al. - 2024 - A roadmap for generating annual bycatch estimates .pdf}
+}

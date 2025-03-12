@@ -62,6 +62,7 @@ plot_time_predictions = function(plot_data, obs_data = NULL, var_x, var_y,
     geom_line(aes(color = {{var_type}})) +
     ylab(yLab) + xlab(NULL) +
     scale_x_continuous(breaks = scales::pretty_breaks()) +
+	scale_y_continuous(expand = c(0, 0.15)) +
     coord_cartesian(ylim = c(0, NA))
   if(CIrib) {
     p1 = p1 + geom_ribbon(aes(ymin = {{var_lwr}}, ymax = {{var_upr}}, fill = {{var_type}}), alpha = 0.3) + 

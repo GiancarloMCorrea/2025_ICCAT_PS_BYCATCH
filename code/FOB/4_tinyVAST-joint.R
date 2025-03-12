@@ -17,8 +17,8 @@ source('code/parameters_for_plots.R')
 source('code/aux_functions.R')
 
 # Select species and school type:
-n_sp = 5 # first N species (only applies to weight or numbers datasets)
-n_fac_vec = 2:6 # Number of factors to test (vector)
+n_sp = 25 # first N species (only applies to weight or numbers datasets)
+n_fac_vec = 2:5 # Number of factors to test (vector)
 this_type = 'FOB'
 
 # -------------------------------------------------------------------------
@@ -210,19 +210,21 @@ for(m in seq_along(n_fac_vec)) {
   # Association sp to factors (time_term, nu):
   if(n_comps == 1) nu_slot_vec = 'nu_z'
   if(n_comps == 2) nu_slot_vec = c('nu_z', 'nu2_z')
+  save_Lnu_mat = list()
   for(cp in seq_along(nu_slot_vec)) {
     nu_slot = nu_slot_vec[cp]
     Lhat_cf = matrix(0, nrow = n_sp, ncol = n_fac)
     nu2_vec = as.list(jtVModel$sdrep, what="Estimate")[[nu_slot]][1:(n_fac*n_sp - sum(0:(n_fac-1)))]
     Lhat_cf[lower.tri(Lhat_cf, diag=TRUE)] = nu2_vec
-    Lhat_cf = rotate_pca( L_tf = Lhat_cf, order = "decreasing" )$L_tf
+    save_Lnu_mat[[cp]] = Lhat_cf
+    Lhat_cf_rot = rotate_pca( L_tf = Lhat_cf)$L_tf
     # Var explained df:
     varex_vec = numeric(n_fac)
-    for(k in 1:n_fac) varex_vec[k] = paste0(round(100*sum(Lhat_cf[,k]^2)/sum(Lhat_cf^2),1), '%')
+    for(k in 1:n_fac) varex_vec[k] = paste0(round(100*sum(Lhat_cf_rot[,k]^2)/sum(Lhat_cf_rot^2),1), '%')
     # Continue..
-    dimnames(Lhat_cf) = list( cumsp_data$sp_name[1:n_sp],
-                              paste0("Factor ", 1:ncol(Lhat_cf), " (", varex_vec, ")") )
-    load_df = as.data.frame(Lhat_cf)
+    dimnames(Lhat_cf_rot) = list( cumsp_data$sp_name[1:n_sp],
+                              paste0("Factor ", 1:ncol(Lhat_cf_rot), " (", varex_vec, ")") )
+    load_df = as.data.frame(Lhat_cf_rot)
     load_df$species = rownames(load_df)
     load_df = pivot_longer(load_df, cols = starts_with("Factor"), names_to = 'Factor', values_to = 'loading')
     
@@ -237,18 +239,40 @@ for(m in seq_along(n_fac_vec)) {
     # Plot Correlation matrix:
     Cov_nu2 = Lhat_cf %*% t(Lhat_cf)
     cor_mat = cov2cor(Cov_nu2)
+    dimnames(cor_mat) = list( cumsp_data$sp_name[1:n_sp], cumsp_data$sp_name[1:n_sp])
     png(file = file.path(plot_folder, paste0('Corrplot_Nu', cp, img_type)), width = img_width, 
         height = 150, res = img_res, units = 'mm')
     corrplot::corrplot(cor_mat ,method="circle", type="lower")
     dev.off()
     
     # Plot cluster:
+    rownames(Lhat_cf) = cumsp_data$sp_name[1:n_sp]
     Dist = dist(Lhat_cf, diag=TRUE, upper=TRUE)
     png(file = file.path(plot_folder, paste0('Cluster_Nu', cp, img_type)), width = img_width, 
         height = 120, res = img_res, units = 'mm')
     plot(hclust(Dist))
     dev.off()
   }
+  
+
+  # -------------------------------------------------------------------------
+  # Association sp to factors (time_term, nu): COMBINED 
+  # Vhat_total = save_Lnu_mat[[1]] %*% t(save_Lnu_mat[[1]]) + save_Lnu_mat[[2]] %*% t(save_Lnu_mat[[2]])
+  # Vhat_total = t(save_Lnu_mat[[1]]) %*% save_Lnu_mat[[1]] + t(save_Lnu_mat[[2]]) %*% save_Lnu_mat[[2]]
+  # 
+  # # Plot cluster:
+  # rownames(Vhat_total) = cumsp_data$sp_name[1:n_sp]
+  # colnames(Vhat_total) = cumsp_data$sp_name[1:n_sp]
+  # Dist = dist(Vhat_total, diag=TRUE, upper=TRUE)
+  # png(file = file.path(plot_folder, paste0('Cluster_Nu', cp, img_type)), width = img_width, 
+  #     height = 120, res = img_res, units = 'mm')
+  # plot(hclust(Dist))
+  # dev.off()
+  # 
+  # xa = Matrix::chol(Vhat_total, pivot = TRUE)
+  # xa = Matrix::chol(Vhat_total)
+  # matrixcalc::is.positive.semi.definite(Vhat_total)
+  # expand(Matrix::lu(Vhat_total))
   
   # -------------------------------------------------------------------------
   # Association sp to factors (space_term, theta):
@@ -259,14 +283,14 @@ for(m in seq_along(n_fac_vec)) {
     Lhat_cf = matrix(0, nrow = n_sp, ncol = n_fac)
     theta2_vec = as.list(jtVModel$sdrep, what="Estimate")[[theta_slot]][1:(n_fac*n_sp - sum(0:(n_fac-1)))]
     Lhat_cf[lower.tri(Lhat_cf, diag=TRUE)] = theta2_vec
-    Lhat_cf = rotate_pca( L_tf = Lhat_cf, order = "decreasing" )$L_tf
+    Lhat_cf_rot = rotate_pca( L_tf = Lhat_cf )$L_tf
     # Var explained df:
     varex_vec = numeric(n_fac)
-    for(k in 1:n_fac) varex_vec[k] = paste0(round(100*sum(Lhat_cf[,k]^2)/sum(Lhat_cf^2),1), '%')
+    for(k in 1:n_fac) varex_vec[k] = paste0(round(100*sum(Lhat_cf_rot[,k]^2)/sum(Lhat_cf_rot^2),1), '%')
     # Continue..
-    dimnames(Lhat_cf) = list( cumsp_data$sp_name[1:n_sp],
-                              paste0("Factor ", 1:ncol(Lhat_cf), " (", varex_vec, ")") )
-    load_df = as.data.frame(Lhat_cf)
+    dimnames(Lhat_cf_rot) = list( cumsp_data$sp_name[1:n_sp],
+                              paste0("Factor ", 1:ncol(Lhat_cf_rot), " (", varex_vec, ")") )
+    load_df = as.data.frame(Lhat_cf_rot)
     load_df$species = rownames(load_df)
     load_df = pivot_longer(load_df, cols = starts_with("Factor"), names_to = 'Factor', values_to = 'loading')
 
@@ -281,12 +305,14 @@ for(m in seq_along(n_fac_vec)) {
     # Plot Correlation matrix:
     Cov_omega2 = Lhat_cf %*% t(Lhat_cf)
     cor_mat = cov2cor(Cov_omega2)
+    dimnames(cor_mat) = list( cumsp_data$sp_name[1:n_sp], cumsp_data$sp_name[1:n_sp])
     png(file = file.path(plot_folder, paste0('Corrplot_Theta', cp, img_type)), width = img_width, 
         height = 150, res = img_res, units = 'mm')
     corrplot::corrplot(cor_mat ,method="circle", type="lower")
     dev.off()
     
     # Plot cluster:
+    rownames(Lhat_cf) = cumsp_data$sp_name[1:n_sp]
     Dist = dist(Lhat_cf, diag=TRUE, upper=TRUE)
     png(file = file.path(plot_folder, paste0('Cluster_Theta', cp, img_type)), width = img_width, 
         height = 120, res = img_res, units = 'mm')

@@ -1,16 +1,7 @@
-# devtools::install_github("vast-lib/tinyVAST", dependencies = TRUE)
 rm(list = ls())
 # -------------------------------------------------------------------------
-library(tinyVAST)
 library(dplyr)
-library(sf)
 library(ggplot2)
-library(viridis)
-library(boot)
-library(ggeffects)
-library(pdp)
-library(fmesher)
-library(sdmTMB)
 source('code/parameters_for_plots.R')
 source('code/aux_functions.R')
 
@@ -76,5 +67,5 @@ p1 = ggplot(data = df_est, aes(x = Year, y = est)) +
         axis.text.x = element_text(size = 7),
         axis.text.y = element_text(size = 7)) +
   facet_wrap(~species, scales = 'free_y')
-ggsave(filename = paste0('estimates_', this_set, img_type), path = plot_folder, plot = p1, 
-       width = img_width, height = 140, units = 'mm', dpi = img_res)
+ggsave(filename = paste0('estimates_all_taxa', img_type), path = file.path(plot_folder, this_set), 
+       plot = p1, width = img_width, height = 140, units = 'mm', dpi = img_res)
