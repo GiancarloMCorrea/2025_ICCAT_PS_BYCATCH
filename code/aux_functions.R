@@ -14,6 +14,7 @@ add_sf_map = function(my_plot) {
 }
 
 
+# -------------------------------------------------------------------------
 calculate_area_on_land = function(dat) {
   
   library(rgeos)
@@ -30,46 +31,57 @@ calculate_area_on_land = function(dat) {
   
 }
 
-plot_predictions = function(plot_data, legend_position = c(0.65, 0.08), legend_title = 'Predicted CPUE', nCol = 5) {
+
+# -------------------------------------------------------------------------
+
+plot_predictions = function(plot_data, nCol = 4) {
+  
+  # Plot CPUE by grid and year:
+  plot_data = plot_data %>% group_by(year, ID) %>% summarise(bycatch_est = sum(bycatch_est)) 
+  plot_data = left_join(MyGrid, plot_data, by = 'ID')
+  plot_data = plot_data %>% na.omit
+  plot_data = plot_data %>% mutate(est_disc = cut(bycatch_est, 
+                                                  breaks = c(0, quantile(x = plot_data$bycatch_est, probs = c(0.25, 0.5, 0.95)), Inf), 
+                                                  right=FALSE))
   
   p1 = ggplot() +  
-    geom_sf(data = plot_data, aes(fill = cpue_pred, color = cpue_pred)) + 
-    scale_fill_viridis() + scale_color_viridis() +
-    geom_sf(data = worldmap, fill = "gray60", color=NA) +
-    coord_sf(expand = FALSE, xlim = xLim, ylim = yLim) +
-    xlab(NULL) + ylab(NULL) +
-    theme(legend.position = legend_position, legend.direction="horizontal") +
-    scale_x_continuous(breaks = xBreaks) + scale_y_continuous(breaks = yBreaks) +
-    facet_wrap(~ year, ncol = nCol) +
-    labs(fill = legend_title) + guides(color = 'none')
+    geom_sf(data = plot_data, aes(fill = est_disc, color = est_disc)) + 
+    scale_fill_viridis_d() + scale_color_viridis_d() 
+  p1 = add_sf_map(p1)
+  p1 = p1 + labs(fill = "Estimates") + theme(legend.position = 'bottom') + 
+    guides(color = 'none') +
+    facet_wrap(~ year, ncol = 4)
   
   return(p1)
   
 }
 
-plot_time_predictions = function(plot_data, obs_data = NULL, var_x, var_y, 
-                                 var_lwr = NULL, var_upr = NULL,
-                                 var_type,
-                                 yLab = 'CPUE', add_legend = TRUE) {
+# -------------------------------------------------------------------------
+plot_time_predictions = function(model_est, ratio_est) {
   
-  require(scales)
-  CIrib = FALSE
-  if((deparse(substitute(var_lwr)) %in% colnames(plot_data)) & (deparse(substitute(var_upr)) %in% colnames(plot_data))) CIrib = TRUE
-  add_nominal = TRUE
-  if(is.null(obs_data)) add_nominal = FALSE
+  colvals = RColorBrewer::brewer.pal(n = 3, name = 'Set1')
+  # Legend for plot:
+  annotations <- data.frame(
+    xpos = c(Inf, Inf, Inf),
+    ypos =  c(Inf, Inf, Inf),
+    annotateText = c("Production", "Number of sets", "sdmTMB"),
+    hjustvar = c(1, 1, 1) ,
+    vjustvar = c(1.5, 3.5, 5.5))
   
-  p1 = ggplot(data = plot_data, aes(x = {{var_x}}, y = {{var_y}})) +
-    geom_line(aes(color = {{var_type}})) +
-    ylab(yLab) + xlab(NULL) +
-    scale_x_continuous(breaks = scales::pretty_breaks()) +
-	scale_y_continuous(expand = c(0, 0.15)) +
-    coord_cartesian(ylim = c(0, NA))
-  if(CIrib) {
-    p1 = p1 + geom_ribbon(aes(ymin = {{var_lwr}}, ymax = {{var_upr}}, fill = {{var_type}}), alpha = 0.3) + 
-    guides(color = guide_legend(title = NULL), fill = guide_legend(title = NULL))
-  }
-  if(add_nominal) p1 = p1 + geom_point(data = obs_data, aes(x = {{var_x}}, y = {{var_y}}), color = 'red') 
-  if(!add_legend) p1 = p1 + theme(legend.position = 'none')
+  p1 = ggplot(data = ratio_est) +
+    geom_point(aes(x = year, y = est_prod), color = colvals[1]) +
+    geom_line(aes(x = year, y = est_prod), color = colvals[1]) +
+    geom_point(aes(x = year, y = est_sets), color = colvals[2]) +
+    geom_line(aes(x = year, y = est_sets), color = colvals[2]) +
+    geom_pointrange(data = model_est, aes(x = year, y = est,
+                                          ymin = lwr, ymax = upr),
+                    color = colvals[3], size = 0.25) +
+    scale_x_continuous(breaks = seq(from = 2014, to = 2022, by = 4)) +
+    labs(x = 'Year', y = 'Estimated bycatch (tons)') +
+    geom_text(data=annotations[1,],aes(x=xpos,y=ypos,hjust=hjustvar, vjust=vjustvar,label=annotateText), color = colvals[1]) +
+    geom_text(data=annotations[2,],aes(x=xpos,y=ypos,hjust=hjustvar, vjust=vjustvar,label=annotateText), color = colvals[2]) +
+    geom_text(data=annotations[3,],aes(x=xpos,y=ypos,hjust=hjustvar, vjust=vjustvar,label=annotateText), color = colvals[3]) +
+    theme(legend.position = 'none') + ggtitle(this_sp) 
   
   return(p1)
   
@@ -77,7 +89,68 @@ plot_time_predictions = function(plot_data, obs_data = NULL, var_x, var_y,
 
 
 # -------------------------------------------------------------------------
-# Function to make the time term:
+# Plot darhma residuals:
+plot_residuals = function(this_model){
+  
+  sim_res = simulate(this_model, nsim = 500, type = "mle-mvn")
+  check_res = sdmTMB::dharma_residuals(sim_res, this_model, return_DHARMa = TRUE)
+  png(filename = file.path(this_plot_folder, paste0('res_dharma', img_type)), 
+      width = img_width, height = 100, units = 'mm', res = img_res)
+  par(mar = c(4, 4, 1, 0.5))
+  plot(check_res, title = NULL)
+  dev.off()
+  
+}
+
+
+
+# -------------------------------------------------------------------------
+# Plot omega:
+
+plot_omega = function(this_model){
+  
+  tmp_df = list()
+  for(j in 1:n_comps) {
+    tmp_df[[j]] = data.frame(Lon = this_model$spde$mesh$loc[,1], 
+                             Lat = this_model$spde$mesh$loc[,2], 
+                             omega = this_model$parlist$omega_s[,j],
+                             comp = paste0('component_', j))
+  }
+  plot_dat = bind_rows(tmp_df)
+  plot_dat = plot_dat %>% st_as_sf(coords = c("Lon", "Lat"), crs = 4326, remove = FALSE)
+  p1 = ggplot(plot_dat) + geom_sf(aes(color = omega), size = 1.5) + scale_colour_gradient2() + labs(color = 'Omega')
+  p1 = add_sf_map(p1)
+  p1 = p1 + facet_wrap(~comp)
+  return(p1)
+  
+}
+
+
+# -------------------------------------------------------------------------
+# Plot epsilon:
+
+plot_epsilon = function(this_model){
+  
+  tmp_df = list()
+  all_years = this_model$time_lu$time_from_data
+  for(i in seq_along(all_years)) {
+    tmp_df[[i]] = data.frame(year = all_years[i],
+                             Lon = this_model$spde$mesh$loc[,1], 
+                             Lat = this_model$spde$mesh$loc[,2], 
+                             epsilon2 = this_model$parlist$epsilon_st[,i,2])
+  }
+  plot_dat = bind_rows(tmp_df)
+  plot_dat = plot_dat %>% st_as_sf(coords = c("Lon", "Lat"), crs = 4326, remove = FALSE)
+  p1 = ggplot(plot_dat) + geom_sf(aes(color = epsilon2), size = 1) + scale_colour_gradient2() + labs(color = 'Epsilon')
+  p1 = add_sf_map(p1)
+  p1 = p1 + facet_wrap(~ year)
+  return(p1)
+  
+}
+
+
+# -------------------------------------------------------------------------
+# Function to make the time term tinyVAST:
 make_time_term = function(n_sp, n_fac, par_lab = 'a', save_folder = NULL) {
   
   tm_p1 = NULL
@@ -110,7 +183,7 @@ make_time_term = function(n_sp, n_fac, par_lab = 'a', save_folder = NULL) {
 }
 
 # -------------------------------------------------------------------------
-# Function to make the space term:
+# Function to make the space term tinyVAST:
 make_space_term = function(n_sp, n_fac, par_lab = 'o', save_folder = NULL) {
   
   sem_p1 = NULL
@@ -139,7 +212,7 @@ make_space_term = function(n_sp, n_fac, par_lab = 'o', save_folder = NULL) {
 }
 
 # -------------------------------------------------------------------------
-# Function to make the spacetime term:
+# Function to make the spacetime term tinyVAST:
 make_spacetime_term = function(n_sp, n_fac, par_lab = 'e', save_folder = NULL) {
   
   dsem_p1 = NULL
@@ -173,4 +246,82 @@ make_spacetime_term = function(n_sp, n_fac, par_lab = 'e', save_folder = NULL) {
   dsem_mod = paste0("\n  ", paste(dsem_file, collapse = '\n  '), "\n")
   return(dsem_mod)
   
+}
+
+
+# -------------------------------------------------------------------------
+# Calculate Moran Index p-value:
+get_moran = function(var_vec, lon, lat) {
+  require(ape)
+  require(fields)
+  if(all(var_vec == 0)) {
+    out = NA
+  } else {
+    coords = cbind(lon, lat)
+    w = fields:::rdist(coords)
+    moran_res = ape::Moran.I(x = var_vec, w = w)
+    out = round(moran_res$p.value, digits = 3)
+  }
+  return(out)
+}
+
+
+# -------------------------------------------------------------------------
+# Shorten species name:
+short_sp_name = function(sp_name) {
+  
+  list_split = strsplit(sp_name," ")
+  save_out = character(length(list_split))
+  for(k in seq_along(list_split)) {
+    n_words = length(list_split[[k]])
+    if(n_words == 1) { 
+      save_out[k] = list_split[[k]][1]
+    } else if(n_words == 2) {
+      save_out[k] = paste0(substring(text = list_split[[k]][1], first = 1, last = 1),
+                        '. ', list_split[[k]][2])
+    } else {
+      save_out[k] = paste(list_split[[k]], collapse = " ")
+    }
+  }
+  return(save_out)
+  
+}
+
+# -------------------------------------------------------------------------
+# Produce table with fixed effects sdmTMB:
+get_summary_sdmTMB = function(model, n_comp, model_label = 'model') {
+  save_df = list()
+  for(i in 1:n_comp) {
+    summdf = tidy(model, model = i) %>% mutate(z_score = estimate/std.error,
+                                               p_value = 2*pnorm(-abs(z_score)))
+    summdf = summdf %>% select(term, estimate, std.error, p_value) %>% 
+      mutate(estimate = round(estimate, 2),
+             std.error = round(std.error, 2),
+             p_value = ifelse(p_value < 0.01, '<0.01', round(p_value, 2)),
+             component = i, model = model_label)
+    save_df[[i]] = summdf
+  }
+  out_df = bind_rows(save_df)
+  return(out_df)
+}
+
+# -------------------------------------------------------------------------
+# Remove terms from sdmTMB formula based on significance:
+remove_terms_sdmTMB = function(model, n_comp, formula) {
+  out_formula = formula
+  for(k in 1:n_comp) {
+    tmp_formula = as.character(formula[[k]])
+    tmp_formula = paste(tmp_formula[2], tmp_formula[1], tmp_formula[3])
+    tmp_formula = gsub(pattern = ' ', replacement = '', x = tmp_formula)
+    summdf = tidy(model, model = k) %>% mutate(z_score = estimate/std.error,
+                                               p_value = 2*pnorm(-abs(z_score)))
+    nonsig_terms = summdf$term[which(summdf$p_value >= 0.05)]
+    terms_vec = strsplit(x = tmp_formula, split = '[+]')[[1]]
+    n_levels_qtr = length(levels(model$data$quarter))
+    if(length(grep(pattern = 'quarter', x = nonsig_terms)) == (n_levels_qtr-1)) terms_vec = terms_vec[-which(terms_vec == 'quarter')]
+    if(length(grep(pattern = 'sst', x = nonsig_terms)) == 1) terms_vec = terms_vec[-which(terms_vec == 'sst')]
+    if(length(grep(pattern = 'trop_catch', x = nonsig_terms)) == 1) terms_vec = terms_vec[-which(terms_vec == 'trop_catch')]
+    out_formula[[k]] = as.formula(paste(terms_vec, collapse = '+'))
+  }
+  return(out_formula)
 }

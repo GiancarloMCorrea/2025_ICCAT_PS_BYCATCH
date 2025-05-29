@@ -1,4 +1,5 @@
 # These parameters will be used in all R scripts for plotting
+require(ggplot2)
 
 # For maps, define limits:
 xLim = c(-55, 15)

@@ -303,7 +303,7 @@ Estimates for the first 24 taxa:
 
 ## Discussion
 
-- Covariates to be explored: catch tropicals, sst, season (?)
+- Covariates to be explored: catch tropicals, sst, MLD, season (?)
 - TODO: Covariates selection (cross-validation)
 - TODO: Improve estimates for taxa with few observations (or exclude them?)
 

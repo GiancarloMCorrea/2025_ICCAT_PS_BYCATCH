@@ -163,9 +163,11 @@ For model component 1:
 
 - No need to use all taxa
 - Remove discard species (?)
+- No need of environmental information
+- TODO: Find optimal number of clusters
 - TODO: do analysis for FSC fleet
-- TODO: Combine component 1 and 2 into a single analysis to examine species relationships
 - TODO: Test Tweedie distribution
+- TODO: Combine component 1 and 2 into a single analysis to examine species relationships
 
 
 ## Thank you {background-color="black"}
