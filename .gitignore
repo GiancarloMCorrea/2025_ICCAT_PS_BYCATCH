@@ -3,5 +3,4 @@
 .RData
 .Ruserdata
 .RDataTmp
-models/
-figures/FOB/presence_maps
+model/1_single/FOB/**/*.RData

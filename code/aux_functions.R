@@ -41,7 +41,7 @@ plot_predictions = function(plot_data, nCol = 4) {
   plot_data = left_join(MyGrid, plot_data, by = 'ID')
   plot_data = plot_data %>% na.omit
   plot_data = plot_data %>% mutate(est_disc = cut(bycatch_est, 
-                                                  breaks = c(0, quantile(x = plot_data$bycatch_est, probs = c(0.25, 0.5, 0.95)), Inf), 
+                                                  breaks = c(0, quantile(x = plot_data$bycatch_est, probs = c(0.5, 0.75, 0.95)), Inf), 
                                                   right=FALSE))
   
   p1 = ggplot() +  
@@ -50,7 +50,7 @@ plot_predictions = function(plot_data, nCol = 4) {
   p1 = add_sf_map(p1)
   p1 = p1 + labs(fill = "Estimates") + theme(legend.position = 'bottom') + 
     guides(color = 'none') +
-    facet_wrap(~ year, ncol = 4)
+    facet_wrap(~ year, ncol = nCol)
   
   return(p1)
   
@@ -132,19 +132,24 @@ plot_omega = function(this_model){
 plot_epsilon = function(this_model){
   
   tmp_df = list()
+  save_plots = list()
   all_years = this_model$time_lu$time_from_data
-  for(i in seq_along(all_years)) {
-    tmp_df[[i]] = data.frame(year = all_years[i],
-                             Lon = this_model$spde$mesh$loc[,1], 
-                             Lat = this_model$spde$mesh$loc[,2], 
-                             epsilon2 = this_model$parlist$epsilon_st[,i,2])
+  for(k in 1:n_comps) {
+    for(i in seq_along(all_years)) {
+      tmp_df[[i]] = data.frame(year = all_years[i],
+                               Lon = this_model$spde$mesh$loc[,1], 
+                               Lat = this_model$spde$mesh$loc[,2], 
+                               epsilon = this_model$parlist$epsilon_st[,i,k])
+    }
+    plot_dat = bind_rows(tmp_df)
+    plot_dat = plot_dat %>% st_as_sf(coords = c("Lon", "Lat"), crs = 4326, remove = FALSE)
+    p1 = ggplot(plot_dat) + geom_sf(aes(color = epsilon), size = 1) + scale_colour_gradient2() + labs(color = 'Epsilon')
+    p1 = add_sf_map(p1)
+    p1 = p1 + facet_wrap(~ year)
+    save_plots[[k]] = p1
   }
-  plot_dat = bind_rows(tmp_df)
-  plot_dat = plot_dat %>% st_as_sf(coords = c("Lon", "Lat"), crs = 4326, remove = FALSE)
-  p1 = ggplot(plot_dat) + geom_sf(aes(color = epsilon2), size = 1) + scale_colour_gradient2() + labs(color = 'Epsilon')
-  p1 = add_sf_map(p1)
-  p1 = p1 + facet_wrap(~ year)
-  return(p1)
+
+  return(save_plots)
   
 }
 

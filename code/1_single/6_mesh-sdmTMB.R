@@ -4,10 +4,9 @@ for(i in 1:n_mod_sp) {
   
   # Remove models:
   rm(mod_init, mod_upd)
-  
+
   # Create dir to save plots and model outputs:
   this_sp = selsp_data$sp_name[i]
-  this_cat = selsp_data$category[i]
   this_model_folder = file.path(model_folder, this_sp)
   this_plot_folder = file.path(plot_folder, "model_sp", this_sp)
   dir.create(this_model_folder, showWarnings = FALSE, recursive = TRUE)
@@ -78,23 +77,8 @@ for(i in 1:n_mod_sp) {
                               mesh = fm_mesh_2d( sp_data[,c('lon', 'lat')], cutoff = mesh_cutoff ))
   
   # Run models:
+  source('code/1_single/7-run-sdmTMB.R')
   
-  # Category 1
-  if(this_cat == 1) { 
-    source("code/1_single/6-cat1-sdmTMB.R")
-  }
-  
-  # Category 2
-  if(this_cat == 2) { 
-    source("code/1_single/6-cat2-sdmTMB.R")
-  }
-  
-  # Category 3
-  # TODO: remove year or quarter if only one level
-  if(this_cat == 3) { 
-    # Decide what to do here
-  }
-  
-  cat("Model for species", i, this_sp, "completed.\n")
+  cat("Model for species", i, this_sp, check_df$all_ok, "category",  this_cat, "completed.\n")
   
 } # sp loop

@@ -8,7 +8,6 @@ source('code/1_single/load_libs.R')
 # Read data in:
 weight_data = readRDS(file = file.path(data_folder, 'weight_data.rds'))
 numbers_data = readRDS(file = file.path(data_folder, 'numbers_data.rds'))
-# MyGridSets = readRDS(file = file.path(data_folder, 'extraRegion_tinyVAST.rds'))
 effPoints = readRDS(file.path(data_folder, 'effPoints.rds'))
 obsPoints = readRDS(file.path(data_folder, 'obsPoints.rds'))
 
@@ -148,36 +147,14 @@ ggsave(paste0('obs_map_', this_var, img_type), path = plot_folder, plot = p1,
 
 # -------------------------------------------------------------------------
 # Plot relationship between covariates with bycatch log transformed (only positives):
-cumsp_data = read.csv(file.path(data_folder, 'cumsp_data_weight.csv'))
-dir.create(file.path(plot_folder, 'covariate_relationships'), showWarnings = FALSE)
 
-for(k in 1:nrow(cumsp_data)) {
-  plot_data = weight_data %>% dplyr::filter(sp_name %in% cumsp_data$sp_name[k])
+plot_data = weight_data %>% dplyr::filter(bycatch > 0) %>% 
+              mutate(logBycatch = log(bycatch))
 
-  # p1 = ggplot(data = subset(plot_data, bycatch > 0), aes(x = mlotst, y = log(bycatch))) +
-  #   geom_point() +
-  #   xlab("mlotst") + ylab('log(bycatch)') +
-  #   geom_smooth(method = loess, se = FALSE) +
-  #   geom_smooth(method = lm, color = 'red', se = FALSE)
-  p2 = ggplot(data = subset(plot_data, bycatch > 0), aes(x = trop_catch, y = log(bycatch))) +
-    geom_point() +
-    xlab("trop_catch") + ylab('log(bycatch)') +
-    geom_smooth(method = loess, se = FALSE) +
-    geom_smooth(method = lm, color = 'red', se = FALSE)
-  p3 = ggplot(data = subset(plot_data, bycatch > 0), aes(x = sst, y = log(bycatch))) +
+p2 = ggplot(data = plot_data, aes(x = sst, y = logBycatch)) +
     geom_point() +
     xlab("sst") + ylab('log(bycatch)') +
-    geom_smooth(method = loess, se = FALSE) +
-    geom_smooth(method = lm, color = 'red', se = FALSE)
-  # p4 = ggplot(data = subset(plot_data, bycatch > 0), aes(x = nppv, y = log(bycatch))) +
-  #   geom_point() +
-  #   xlab("nppv") + ylab('log(bycatch)') +
-  #   geom_smooth(method = loess, se = FALSE) +
-  #   geom_smooth(method = lm, color = 'red', se = FALSE)
-  
-  merged_plot = gridExtra::grid.arrange(p2, p3, ncol = 2)
-  ggsave(filename = paste0(cumsp_data$sp_name[k], img_type), path = file.path(plot_folder, 'covariate_relationships'), 
-         plot = merged_plot, width = img_width, height = 160, units = 'mm', dpi = img_res)
-  
-  cat("Species", k, "of", nrow(cumsp_data), "\n")
-}
+    geom_smooth(se = FALSE) +
+    facet_wrap(~ sp_name)
+ggsave(filename = paste0('sst_rel', img_type), path = plot_folder, 
+         plot = p2, width = img_width, height = 160, units = 'mm', dpi = img_res)
