@@ -3,7 +3,7 @@ rm(list = ls())
 # Define type of school to be analyzed:
 this_type = 'FOB' # or FSC
 source('code/1_single/load_libs.R')
-mesh_cutoff = 2
+mesh_cutoff = 1.5
 
 # -------------------------------------------------------------------------
 # Read data in:
@@ -34,7 +34,7 @@ p1 = ggplot() +
   geom_sf(data = plot_dat, color = 'gray80', fill = 'gray80', shape = 21, size = 0.5) +
   geom_sf(data = mesh_df, color = 'black', fill = 'black', shape = 21, size = 0.5) 
 p1 = add_sf_map(p1)
-ggsave(paste0('map_mesh_obs', img_type), path = file.path(plot_folder), 
+ggsave(paste0('map_mesh_obs', img_type), path = plot_folder, 
        plot = p1, width = img_width*0.75, height = 120, units = 'mm', dpi = img_res)
 
 # -------------------------------------------------------------------------

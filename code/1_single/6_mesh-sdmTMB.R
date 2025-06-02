@@ -80,5 +80,6 @@ for(i in 1:n_mod_sp) {
   source('code/1_single/7-run-sdmTMB.R')
   
   cat("Model for species", i, this_sp, check_df$all_ok, "category",  this_cat, "completed.\n")
+  if(!check_df$all_ok & this_cat != 3) cat("WARNING! Looks like this species had problems with updated model. Check carefully.\n")
   
 } # sp loop

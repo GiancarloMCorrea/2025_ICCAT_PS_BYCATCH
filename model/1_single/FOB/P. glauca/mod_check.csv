@@ -1,0 +1,10 @@
+"name","check","category"
+"hessian_ok",TRUE,2
+"eigen_values_ok",TRUE,2
+"nlminb_ok",TRUE,2
+"range_ok",TRUE,2
+"gradients_ok",TRUE,2
+"se_magnitude_ok",TRUE,2
+"se_na_ok",TRUE,2
+"sigmas_ok",TRUE,2
+"all_ok",TRUE,2

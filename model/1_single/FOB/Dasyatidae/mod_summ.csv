@@ -1,0 +1,16 @@
+"term","estimate","std.error","p_value","component","model","check","category"
+"fyear2013",-5.03,1.19,"<0.01",1,"Dasyatidae",TRUE,3
+"fyear2014",-5.6,1.22,"<0.01",1,"Dasyatidae",TRUE,3
+"fyear2015",-5.1,1.14,"<0.01",1,"Dasyatidae",TRUE,3
+"fyear2016",-4.52,1.15,"<0.01",1,"Dasyatidae",TRUE,3
+"fyear2017",-4.71,1.14,"<0.01",1,"Dasyatidae",TRUE,3
+"fyear2018",-4.19,1.13,"<0.01",1,"Dasyatidae",TRUE,3
+"fyear2019",-4.5,1.14,"<0.01",1,"Dasyatidae",TRUE,3
+"fyear2020",-4.92,1.16,"<0.01",1,"Dasyatidae",TRUE,3
+"fyear2021",-4.49,1.16,"<0.01",1,"Dasyatidae",TRUE,3
+"fyear2022",-4.68,1.16,"<0.01",1,"Dasyatidae",TRUE,3
+"fyear2023",-4.77,1.18,"<0.01",1,"Dasyatidae",TRUE,3
+"quarter2",-0.22,0.18,"0.2",1,"Dasyatidae",TRUE,3
+"quarter3",-0.41,0.21,"0.05",1,"Dasyatidae",TRUE,3
+"quarter4",-0.34,0.17,"0.05",1,"Dasyatidae",TRUE,3
+"sst",-0.22,0.04,"<0.01",1,"Dasyatidae",TRUE,3

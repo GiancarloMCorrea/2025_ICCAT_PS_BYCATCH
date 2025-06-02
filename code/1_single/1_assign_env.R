@@ -87,6 +87,25 @@ obsPoints = obsPoints %>% rename(sst = thetao)
 effPoints = effPoints %>% rename(sst = thetao)
 
 # -------------------------------------------------------------------------
+# Save data with non standardized env information:
+saveRDS(obsPoints, file = file.path(data_folder, 'obsPoints_nostd.rds'))
+saveRDS(effPoints, file = file.path(data_folder, 'effPoints_nostd.rds'))
+
+# -------------------------------------------------------------------------
+# Standardized covariates to explore effect better:
+
+# Select variables to standardize:
+std_cov = c('sst', 'trop_catch')
+
+# Std covariates in observations
+for(j in seq_along(std_cov)) {
+  mean_var = mean(obsPoints[,std_cov[j]], na.rm = T)
+  sd_var = sd(obsPoints[,std_cov[j]], na.rm = T)
+  obsPoints[,std_cov[j]] = (obsPoints[,std_cov[j]] - mean_var)/sd_var
+  effPoints[,std_cov[j]] = (effPoints[,std_cov[j]] - mean_var)/sd_var
+}
+
+# -------------------------------------------------------------------------
 # Save data with env information:
 saveRDS(obsPoints, file = file.path(data_folder, 'obsPoints.rds'))
 saveRDS(effPoints, file = file.path(data_folder, 'effPoints.rds'))

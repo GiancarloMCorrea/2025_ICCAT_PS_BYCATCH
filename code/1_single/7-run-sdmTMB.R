@@ -75,7 +75,7 @@ if(check_df$all_ok) {
     summ_table = get_summary_sdmTMB(model = mod_upd, n_comp = n_comps, model_label = this_sp)
     summ_table$check = check_df$all_ok
     summ_table$category = this_cat
-    write.csv(summ_table, file = file.path(this_model_folder, 'mod_summ.csv'), row.names = FALSE)
+    saveRDS(summ_table, file = file.path(this_model_folder, 'mod_summ.rds'))
     save(mod_upd, file = file.path(this_model_folder, 'mod.RData'))
   }
 }

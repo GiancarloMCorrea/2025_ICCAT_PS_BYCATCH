@@ -37,7 +37,7 @@ calculate_area_on_land = function(dat) {
 plot_predictions = function(plot_data, nCol = 4) {
   
   # Plot CPUE by grid and year:
-  plot_data = plot_data %>% group_by(year, ID) %>% summarise(bycatch_est = sum(bycatch_est)) 
+  plot_data = plot_data %>% group_by(year, ID) %>% summarise(bycatch_est = sum(bycatch_est), .groups = 'drop') 
   plot_data = left_join(MyGrid, plot_data, by = 'ID')
   plot_data = plot_data %>% na.omit
   plot_data = plot_data %>% mutate(est_disc = cut(bycatch_est, 
@@ -300,9 +300,7 @@ get_summary_sdmTMB = function(model, n_comp, model_label = 'model') {
     summdf = tidy(model, model = i) %>% mutate(z_score = estimate/std.error,
                                                p_value = 2*pnorm(-abs(z_score)))
     summdf = summdf %>% select(term, estimate, std.error, p_value) %>% 
-      mutate(estimate = round(estimate, 2),
-             std.error = round(std.error, 2),
-             p_value = ifelse(p_value < 0.01, '<0.01', round(p_value, 2)),
+      mutate(p_value = ifelse(p_value < 0.01, '<0.01', round(p_value, 2)),
              component = i, model = model_label)
     save_df[[i]] = summdf
   }
