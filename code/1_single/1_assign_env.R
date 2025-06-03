@@ -1,7 +1,7 @@
 rm(list = ls())
 
 # Define type of school to be analyzed:
-this_type = 'FOB' # or FSC
+this_type = 'FSC' # FOB or FSC
 source('code/1_single/load_libs.R')
 
 # -------------------------------------------------------------------------
@@ -93,6 +93,8 @@ saveRDS(effPoints, file = file.path(data_folder, 'effPoints_nostd.rds'))
 
 # -------------------------------------------------------------------------
 # Standardized covariates to explore effect better:
+obsPoints = obsPoints %>% mutate(sst_nonstd = sst, trop_catch_nonstd = trop_catch)
+effPoints = effPoints %>% mutate(sst_nonstd = sst, trop_catch_nonstd = trop_catch)
 
 # Select variables to standardize:
 std_cov = c('sst', 'trop_catch')

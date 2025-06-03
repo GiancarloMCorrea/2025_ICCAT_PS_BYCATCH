@@ -1,6 +1,6 @@
 
 # Loop over number of factors
-for(m in seq_along(n_fac_vec)) {
+for(m in 1:length(n_fac_vec)) {
   
   n_fac = n_fac_vec[m]
   # Define folder to save results
@@ -48,13 +48,14 @@ for(m in seq_along(n_fac_vec)) {
                                 control = tinyVASTcontrol(gmrf="proj")), 
                       error = function(e) conditionMessage(e))
 
+  if(!is.character(jtVModel)) {
+    
   # Save model
   save(jtVModel, file = file.path(this_model_folder, 'jtVModel.RData'))
-  
-  if(!is.character(jtVModel)) {
-  
+    
   # Check residuals
-  y_ir = replicate( n = 500, expr = jtVModel$obj$simulate()$y_i )
+  #y_ir = replicate( n = 500, expr = jtVModel$obj$simulate()$y_i )
+  y_ir = simulate(jtVModel, nsim=100, type="mle-mvn")
   res = DHARMa::createDHARMa( simulatedResponse = y_ir, 
                               observedResponse = mod_data$bycatch, 
                               fittedPredictedResponse = fitted(jtVModel) )
@@ -81,10 +82,12 @@ for(m in seq_along(n_fac_vec)) {
   par_df = bind_rows(save_coeff)
   par_df$max_grad = max(abs(jtVModel$obj$gr()))
   par_df$convergence = jtVModel$opt$convergence
+  par_df$AIC = AIC(jtVModel)
   write.csv(par_df, file = file.path(this_model_folder, 'parameter_estimates.csv'), row.names = FALSE)
   
   # -------------------------------------------------------------------------
   # Plot Omega (Factors):
+  n_comps = 1
   if(n_comps == 1) omega_slot_vec = 'omega_sc'
   if(n_comps == 2) omega_slot_vec = c('omega_sc', 'omega2_sc')
   for(cp in seq_along(omega_slot_vec)) {

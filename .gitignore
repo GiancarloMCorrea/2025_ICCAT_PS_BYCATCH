@@ -4,3 +4,4 @@
 .Ruserdata
 .RDataTmp
 model/1_single/FOB/**/*.RData
+figures/

@@ -1,7 +1,7 @@
 rm(list = ls())
 
 # Define type of school to be analyzed:
-this_type = 'FOB' # or FSC
+this_type = 'FOB' 
 source('code/2_multi/load_libs.R')
 
 # -------------------------------------------------------------------------

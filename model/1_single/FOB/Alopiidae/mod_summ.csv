@@ -1,9 +1,0 @@
-"term","estimate","std.error","p_value","component","model","check","category"
-"fyear2014",-18.39,2.46,"<0.01",1,"Alopiidae",TRUE,3
-"fyear2015",-17.91,2.28,"<0.01",1,"Alopiidae",TRUE,3
-"fyear2016",-18.49,2.35,"<0.01",1,"Alopiidae",TRUE,3
-"fyear2017",-17.44,2.28,"<0.01",1,"Alopiidae",TRUE,3
-"fyear2018",-20.39,2.48,"<0.01",1,"Alopiidae",TRUE,3
-"fyear2021",-19.01,2.36,"<0.01",1,"Alopiidae",TRUE,3
-"fyear2022",-18.52,2.39,"<0.01",1,"Alopiidae",TRUE,3
-"trop_catch",0.01,0,"<0.01",1,"Alopiidae",TRUE,3

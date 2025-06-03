@@ -1,7 +1,7 @@
 rm(list = ls())
 
 # Define type of school to be analyzed:
-this_type = 'FOB' # or FSC
+this_type = 'FSC' # FOB or FSC
 source('code/1_single/load_libs.R')
 
 # -------------------------------------------------------------------------
@@ -86,7 +86,7 @@ ggsave(paste0('map_sets', img_type), plot = my_plot, path = plot_folder,
 
 # -------------------------------------------------------------------------
 # Fishing locations OBS by season/month:
-plot_data = obsPoints %>% st_as_sf(coords = c("longitude", "latitude"), crs = 4326, remove = FALSE)
+plot_data = obsPoints %>% st_as_sf(coords = c("lon", "lat"), crs = 4326, remove = FALSE)
 
 # Make plot:
 p1 = ggplot(plot_data) + geom_sf(aes(color = quarter), size = 0.5, alpha = 0.35)
@@ -132,7 +132,7 @@ ggsave(paste0('obs_prop-pos_set', img_type), path = plot_folder, plot = p1,
 
 # Fishing locations OBS by season/month:
 plot_data = obsPoints %>% st_as_sf(coords = c("lon", "lat"), crs = 4326, remove = FALSE)
-this_var = "trop_catch"
+this_var = "sst"
 
 # Make plot:
 p1 = ggplot(plot_data) + geom_sf(aes(color = get(this_var)), size = 0.5, alpha = 0.5)
@@ -151,10 +151,10 @@ ggsave(paste0('obs_map_', this_var, img_type), path = plot_folder, plot = p1,
 plot_data = weight_data %>% dplyr::filter(bycatch > 0) %>% 
               mutate(logBycatch = log(bycatch))
 
-p2 = ggplot(data = plot_data, aes(x = sst, y = logBycatch)) +
+p2 = ggplot(data = plot_data, aes(x = trop_catch, y = logBycatch)) +
     geom_point() +
-    xlab("sst") + ylab('log(bycatch)') +
+    xlab("trop_catch") + ylab('log(bycatch)') +
     geom_smooth(se = FALSE) +
     facet_wrap(~ sp_name)
-ggsave(filename = paste0('sst_rel', img_type), path = plot_folder, 
+ggsave(filename = paste0('trop_catch_rel', img_type), path = plot_folder, 
          plot = p2, width = img_width, height = 160, units = 'mm', dpi = img_res)

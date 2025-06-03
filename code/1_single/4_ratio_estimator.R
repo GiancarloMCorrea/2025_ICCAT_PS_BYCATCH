@@ -1,7 +1,7 @@
 rm(list = ls())
 
 # Define type of school to be analyzed:
-this_type = 'FOB' # or FSC
+this_type = 'FSC' # FOB or FSC
 source('code/1_single/load_libs.R')
 
 # -------------------------------------------------------------------------
@@ -15,7 +15,7 @@ effPoints = readRDS(file.path(data_folder, 'effPoints.rds'))
 
 raiseData = wtData %>% group_by(ID, year, quarter, sp_name) %>% 
                 summarise(bycatch = sum(bycatch),
-                          production = sum(trop_catch))
+                          production = sum(trop_catch_nonstd))
 raiseData = raiseData %>% mutate(ratio = bycatch/production)
 # Replace Inf and NaN with zeros due to production == 0:
 # This is a caveat of this method
@@ -24,7 +24,7 @@ raiseData = raiseData %>% mutate(ratio = ifelse(is.nan(ratio), 0, ratio))
 
 # Summarise effort data:
 logbookData = effPoints %>% group_by(ID, year, quarter) %>% 
-                summarise(production = sum(trop_catch))
+                summarise(production = sum(trop_catch_nonstd))
 
 # Merge dfs:
 mergedData = left_join(logbookData, raiseData[,c('ID', 'year', 'quarter', 'sp_name', 'ratio')])
@@ -87,6 +87,6 @@ ggplot(plot_data, aes(x = year, y = est_value, color = est_type)) +
   facet_wrap(~ sp_name, scales = 'free_y') +
   labs(x = 'Year', y = 'Estimated bycatch (tons)', color = 'Estimation type') +
   theme_classic() +
-  theme(legend.position = c(0.7, 0.03))
+  theme(legend.position = c(0.8, 0.03))
 ggsave(file.path(plot_folder, 'ratio_estimates_by_year.png'), width = img_width*1.5, 
        height = 180, units = 'mm', dpi = img_res)

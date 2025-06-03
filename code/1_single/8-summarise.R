@@ -1,7 +1,7 @@
 rm(list = ls())
 
 # Define type of school to be analyzed:
-this_type = 'FOB' # or FSC
+this_type = 'FSC' # FOB or FSC
 source('code/1_single/load_libs.R')
 
 # -------------------------------------------------------------------------
@@ -40,8 +40,8 @@ ggsave(file.path(plot_folder, 'compare_estimates.png'), width = img_width*1.5, p
 all_sp = list.files(file.path(model_folder))
 coef_df = list()
 for(k in seq_along(all_sp)) {
-  this_file = file.path(model_folder, all_sp[k], 'mod_summ.csv')
-  if(file.exists(this_file)) coef_df[[k]] = read.csv(this_file)
+  this_file = file.path(model_folder, all_sp[k], 'mod_summ.rds')
+  if(file.exists(this_file)) coef_df[[k]] = readRDS(this_file)
 }
 # Merge:
 coef_df = bind_rows(coef_df)
@@ -51,11 +51,16 @@ coef_df = coef_df %>% mutate(term = factor(term, levels = c('sst', 'trop_catch')
                                            labels = c('SST', 'Target catch')),
                              component = factor(component, levels = c('1', '2'), 
                                            labels = c('Component 1', 'Component 2')))
+# Add asterisk after sp name for tweedie models:
+coef_df = coef_df %>% mutate(model = if_else(category == 3, paste0(model, '*'), model))
+
 
 p2 = ggplot(data = coef_df, aes(x = term, y = model, fill = estimate)) +
   geom_tile(color = NA) +
   xlab(NULL ) + ylab(NULL) +
-  scale_fill_gradient2(low = muted("blue"), high = muted("red")) +
+  scale_fill_gradient2(low = "blue", high = "red") +
+  labs(fill = expression(beta)) +
+  theme_classic() +
   facet_grid(~ component)
 ggsave(file.path(plot_folder, 'table_effect.png'), width = img_width, 
        plot = p2, height = 180, units = 'mm', dpi = img_res)

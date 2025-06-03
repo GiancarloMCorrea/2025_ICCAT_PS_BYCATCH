@@ -122,7 +122,7 @@ if(check_df$all_ok) {
   # Plot ratio and sdmTMB estimates:
   ratioEst = readRDS(file.path(data_folder, 'ratio_estimates.rds'))
   ratioEstSp = ratioEst %>% filter(sp_name %in% this_sp) %>% group_by(year) %>%
-    summarise(est_prod = sum(est_prod), est_sets = sum(est_sets))
+    summarise(est_prod = sum(est_prod), est_sets = sum(est_sets), .groups = 'drop')
   
   p1 = plot_time_predictions(model_est = pred_time, ratio_est = ratioEstSp)
   ggsave(paste0('compare_estimates', img_type), path = this_plot_folder, plot = p1,

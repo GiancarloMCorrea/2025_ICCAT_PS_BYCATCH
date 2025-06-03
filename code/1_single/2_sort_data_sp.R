@@ -1,7 +1,7 @@
 rm(list = ls())
 
 # Define type of school to be analyzed:
-this_type = 'FOB' # or FSC
+this_type = 'FSC' # FOB or FSC
 source('code/1_single/load_libs.R')
 
 # -------------------------------------------------------------------------
@@ -28,7 +28,6 @@ numbers_data = tidyr::pivot_longer(data = tmp_data, cols = grep(pattern = sel_co
 # Final edits:
 numbers_data = numbers_data %>% dplyr::rename(bycatch = value)
 
-
 # -------------------------------------------------------------------------
 # 'weight' data frame:
 del_cols = c('number_')
@@ -43,6 +42,13 @@ weight_data = weight_data %>% dplyr::rename(bycatch = value)
 # Shorten species name:
 weight_data = weight_data %>% mutate(sp_long_name = sp_name,
                                      sp_name = short_sp_name(sp_long_name))
+
+# Remove species with zero bycatch
+zero_sp = weight_data %>% group_by(sp_name) %>% 
+  summarise(bycatch = sum(bycatch)) %>% 
+  dplyr::filter(bycatch == 0) %>% pull(sp_name)
+if(length(zero_sp) > 0) weight_data = weight_data %>% dplyr::filter(!(sp_name %in% zero_sp))
+
 # Now 'clean' sp short name by hand:
 unique(weight_data$sp_name)
 weight_data$sp_name[weight_data$sp_name == 'Alopidae'] <- 'Alopiidae'
@@ -59,12 +65,16 @@ weight_data$sp_name[weight_data$sp_name == 'o. shark'] <- 'Elasmobranchii'
 weight_data$sp_name[weight_data$sp_name == 's. turtles'] <- 'Chelonioidea'
 weight_data$sp_name[weight_data$sp_name == 'Sphyrnidae'] <- 'Sphyraenidae' # combine in one group
 weight_data$sp_name[weight_data$sp_name == 'Uraspis'] <- 'Uraspis spp.' 
+unique(weight_data$sp_name)
 
 # Combine per id set:
 weight_data_clean = weight_data %>% 
-        group_by(id_set,ID,year,quarter,vessel_code,sp_name,
-                 lon,lat,sst,trop_catch,sunrise_diference) %>%
-        summarise(bycatch=sum(bycatch))
+        group_by(id_set,ID,year,quarter,vessel_code,sp_name) %>%
+        summarise(lon=mean(lon),lat=mean(lat),
+                  sst=mean(sst),trop_catch=mean(trop_catch),
+                  sst_nonstd = mean(sst_nonstd), 
+                  trop_catch_nonstd = mean(trop_catch_nonstd),
+                  bycatch=sum(bycatch))
 
 # -------------------------------------------------------------------------
 # Save created data:
@@ -104,8 +114,6 @@ sp_quarter = weight_data_clean %>% group_by(quarter, sp_name) %>%
                 summarise(bycatch = sum(bycatch)) %>% group_by(sp_name) %>%
                 summarise(n_quarters = sum(bycatch > 0))
 sel_sp_data = left_join(sel_sp_data, sp_quarter, by = 'sp_name')
-sel_sp_data = sel_sp_data %>% mutate(category = if_else(n_years_spat_cor >= 6 & n_years == n_years, 1, 
-                                                        if_else(n_years_spat_cor <= 5 & n_years_spat_cor >= 3, 2, 3)))
 summary(sel_sp_data) # check no NAs
 View(sel_sp_data)
 saveRDS(sel_sp_data, file = file.path(data_folder, 'model_cat_sp.rds'))
