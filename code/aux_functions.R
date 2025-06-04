@@ -328,3 +328,59 @@ remove_terms_sdmTMB = function(model, n_comp, formula) {
   }
   return(out_formula)
 }
+
+
+# -------------------------------------------------------------------------
+# Calculate ratio estimator:
+calculate_ratio_bycatch = function(obs_df, eff_df, type = 'production') {
+  
+  # Define denominator here:
+  if(type == 'production') {
+    obs_df$denom = obs_df$trop_catch_nonstd
+    eff_df$denom = eff_df$trop_catch_nonstd
+  }
+  if(type == 'n_sets') {
+    obs_df$denom = 1
+    eff_df$denom = 1
+  }
+  
+  grData = obs_df %>% group_by(ID, year, quarter, sp_name) %>% 
+    summarise(bycatch = sum(bycatch),
+              denom = sum(denom), .groups = 'drop')
+  raiseData = grData %>% mutate(ratio = bycatch/denom)
+  # Replace Inf and NaN with zeros due to denom == 0:
+  raiseData = raiseData %>% mutate(ratio = ifelse(is.infinite(ratio), 0, ratio))
+  raiseData = raiseData %>% mutate(ratio = ifelse(is.nan(ratio), 0, ratio))
+  
+  # Calculate ratio per year/quarter/species for whole area:
+  raiseData_tot = grData %>% group_by(year, quarter, sp_name) %>% 
+    summarise(ratio_tot = sum(bycatch)/sum(denom), .groups = 'drop')
+  
+  # Summarise effort data:
+  logbookData = eff_df %>% group_by(ID, year, quarter) %>% 
+    summarise(denom = sum(denom), .groups = 'drop')
+  
+  # Merge dfs:
+  raiseData = raiseData %>% select(ID, year, quarter, sp_name, ratio)
+  mergedData = left_join(logbookData, raiseData, by = c('ID', 'year', 'quarter'))
+  # I think this step is no needed...
+  mergedData = left_join(mergedData, raiseData_tot, by = c('year', 'quarter', 'sp_name'))
+  # Check if NA comes from grid with no bycatch:
+  # identical( which(is.na(mergedData$sp_name)), which(is.na(mergedData$ratio)) )
+  # Remove those NA safely:
+  mergedData = mergedData %>% filter(!is.na(sp_name))
+  # Check again if any NA and replace with tot ratio:
+  if(any(is.na(mergedData$ratio))) {
+    mergedData = mergedData %>% mutate(ratio = ifelse(is.na(ratio), ratio_tot, ratio))
+  }
+  
+  # Estimates by year and quarter:
+  mergedData = mergedData %>% mutate(est = ratio*denom)
+  estimateData = mergedData %>% group_by(year, quarter, sp_name) %>% 
+    summarise(est = sum(est, na.rm = TRUE), .groups = 'drop') 
+  return(estimateData)
+  
+}
+
+
+

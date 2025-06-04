@@ -5,3 +5,4 @@
 .RDataTmp
 model/1_single/FOB/**/*.RData
 figures/
+model/3_sampsize
