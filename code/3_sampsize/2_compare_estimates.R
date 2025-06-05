@@ -42,7 +42,7 @@ true_values = true_values %>% group_by(sp_name) %>% summarise(est = sum(est), .g
 p1 = ggplot(data = est_sim, aes(x = samp_frac, y = est)) +
   geom_boxplot(outlier.size = 0.5) +
   geom_hline(data = true_values, aes(yintercept = est), color = 'red', linetype = 'dashed') +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size = 8)) +
   labs(x = "Sampling fraction", y = "Estimated bycatch") +
   facet_wrap(~ sp_name, scales = 'free_y') 
 ggsave(paste0('estimates', img_type), plot = p1, path = plot_folder,

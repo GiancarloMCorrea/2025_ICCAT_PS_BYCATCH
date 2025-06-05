@@ -10,7 +10,8 @@ n_fac_vec = 2:5
 # Read data in:
 weight_data = readRDS(file = file.path(data_folder, 'weight_data.rds'))
 selsp_data = readRDS(file.path(data_folder, 'model_cat_sp.rds'))
-n_sp = 15 # nrow(selsp_data)
+# selsp_data = selsp_data %>% filter(!sp_name %in% "E. alletteratus")
+n_sp = nrow(selsp_data)
 
 # -------------------------------------------------------------------------
 # Filter species:

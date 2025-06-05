@@ -41,9 +41,8 @@ weight_data$sp_name[weight_data$sp_name == 'Uraspis'] <- 'Uraspis spp.'
 
 # Combine per id set:
 weight_data_clean = weight_data %>% 
-        group_by(id_set,ID,year,quarter,vessel_code,sp_name,
-                 lon,lat) %>%
-        summarise(bycatch=sum(bycatch))
+        group_by(id_set,ID,year,quarter,vessel_code,sp_name) %>%
+        summarise(bycatch=sum(bycatch), lon = mean(lon), lat = mean(lat))
 
 
 # -------------------------------------------------------------------------
@@ -82,10 +81,17 @@ sel_sp_data = moran_data %>% filter(!is.na(moran_pval)) %>%
             prop_zero_per_year = mean(porc_zero),
             n_years_spat_cor = sum(moran_pval <= 0.05)) %>% 
   arrange(desc(n_years_spat_cor) )
-sel_sp_data = sel_sp_data %>% filter(n_years == n_years & n_years_spat_cor >= 7)
+totby_data = weight_data_clean %>% group_by(sp_name) %>% 
+  summarise(tot_bycatch = sum(bycatch, na.rm = TRUE)) %>% 
+  arrange(desc(tot_bycatch))
+sel_sp_data = left_join(sel_sp_data, totby_data, by = 'sp_name')
+sel_sp_data = sel_sp_data %>% arrange(desc(tot_bycatch))
+# Calculate cumulative percentage:
+sel_sp_data = sel_sp_data %>% 
+  mutate(cum_perc = cumsum(tot_bycatch)/sum(tot_bycatch) * 100)
+sel_sp_data = sel_sp_data %>% filter(cum_perc < 99)
 View(sel_sp_data)
 saveRDS(sel_sp_data, file = file.path(data_folder, 'model_cat_sp.rds'))
-
 
 # -------------------------------------------------------------------------
 

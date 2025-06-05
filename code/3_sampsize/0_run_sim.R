@@ -56,28 +56,30 @@ save(save_sim_matrix, file = file.path(model_folder, 'sim_sp_matrix.RData'))
 
 # -------------------------------------------------------------------------
 # Loop over sampling effort vector:
-for(i in 1:length(frac_vector)) {
-
-  obs_data = effPoints %>% group_by(year, quarter) %>% slice_sample(prop = frac_vector[i]) 
-  # Obs_data will be used for all species
+for(j in 1:nSims) {
   
-  # Loop over species
-  for(isp in seq_along(these_sp)) {
+  for(i in 1:length(frac_vector)) {
+  
+    obs_data = effPoints %>% group_by(year, quarter) %>% slice_sample(prop = frac_vector[i]) 
+    # Obs_data will be used for all species
     
     # Create folder to save sim estimates 
-    dir.create(file.path(model_folder, 'sim_est', frac_vector[i]), showWarnings = FALSE, recursive = TRUE)
-    # Read simulated values:
-    sim_matrix = save_sim_matrix[[isp]]
+    if(j == 1) { 
+      dir.create(file.path(model_folder, 'sim_est', frac_vector[i]), showWarnings = FALSE, recursive = TRUE)
+      dir.create(file.path(model_folder, 'obs_sim_data', frac_vector[i]), showWarnings = FALSE, recursive = TRUE)
+    }
     
-    # Now calculate bycatch per year for each sim:
-    save_sim = list()
-    for(j in 1:nSims) {
+    # Loop over species
+    save_sim = list() # to save estimates
+    for(isp in seq_along(these_sp)) {
+      
+      # Read simulated values:
+      sim_matrix = save_sim_matrix[[isp]]
+      
+      # Now calculate bycatch per year for each sim:
       obs_data$bycatch = sim_matrix[obs_data$id_obs, j]
       obs_data$sp_name = these_sp[isp]
       if(j == 1) {
-        # Create folder to save sim data (only for one simulation)
-        dir.create(file.path(model_folder, 'obs_sim_data', frac_vector[i]), 
-                   showWarnings = FALSE, recursive = TRUE)
         obs_data$samp_frac = frac_vector[i]
         saveRDS(obs_data, file = file.path(model_folder, 'obs_sim_data', frac_vector[i], 
                                            paste0("sp_", isp, ".rds")))
@@ -87,15 +89,17 @@ for(i in 1:length(frac_vector)) {
       est_df = est_df %>% group_by(year, sp_name) %>% summarise(est = sum(est), .groups = 'drop')
       est_df$sim = paste0("sim_", j)
       est_df$samp_frac = frac_vector[i]
-      save_sim[[j]] = est_df
-    }
+      save_sim[[isp]] = est_df
+      
+    } # Loop over species
+    
     # Save estimates:
     save_sim = bind_rows(save_sim)
     saveRDS(save_sim, file = file.path(model_folder, 'sim_est', frac_vector[i], 
-                                       paste0("sp_", isp, ".rds")))
-    
-    cat("Estimation for species", isp, "fraction", frac_vector[i], "done!\n")
-
-  } # Loop over species
+                                        paste0("sim_", j, ".rds")))
+      
+  } # Loop sampling vector
   
-} # Loop sampling vector
+  cat("Simulation", j, "done!\n")
+
+} # Loop over sims

@@ -19,45 +19,45 @@ for(m in 1:length(n_fac_vec)) {
   # Fit tinyVAST models
   
   # delta lognormal Poisson link
-  # this_mod = tryCatch(tinyVAST( data = mod_data,
-  #                     formula = bycatch ~ 0 + fsp,
-  #                     space_term = s_input,
-  #                     delta_options = list(
-  #                          formula = ~ 0 + fsp,
-  #                          space_term = s_input
-  #                          ),
-  #                     variables = c(paste0('f', 1:n_fac), 1:n_sp ),
-  #                     variable_column = 'sp_number',
-  #                     space_columns = c("lon", "lat"),
-  #                     time_column = 'year',
-  #                     family = delta_lognormal(type="poisson-link"),
-  #                     spatial_domain = my_mesh,
-  #                     control = tinyVASTcontrol(gmrf="proj")), 
-  #                     error = function(e) conditionMessage(e))
+  jtVModel = tryCatch(tinyVAST( data = mod_data,
+                      formula = bycatch ~ 0 + fsp,
+                      space_term = s_input,
+                      delta_options = list(
+                           formula = ~ 0 + fsp,
+                           space_term = s_input
+                           ),
+                      variables = c(paste0('f', 1:n_fac), 1:n_sp ),
+                      variable_column = 'sp_number',
+                      space_columns = c("lon", "lat"),
+                      time_column = 'year',
+                      family = delta_lognormal(type="poisson-link"),
+                      spatial_domain = my_mesh,
+                      control = tinyVASTcontrol(gmrf="proj")),
+                      error = function(e) conditionMessage(e))
   
   # Tweedie:
-  jtVModel = tryCatch(tinyVAST( data = mod_data,
-                                formula = bycatch ~ 0 + fsp,
-                                space_term = s_input,
-                                variables = c(paste0('f', 1:n_fac), 1:n_sp ),
-                                variable_column = 'sp_number',
-                                space_columns = c("lon", "lat"),
-                                time_column = 'year',
-                                family = tweedie(),
-                                spatial_domain = my_mesh,
-                                control = tinyVASTcontrol(gmrf="proj")), 
-                      error = function(e) conditionMessage(e))
+  # jtVModel = tryCatch(tinyVAST( data = mod_data,
+  #                               formula = bycatch ~ 0 + fsp,
+  #                               space_term = s_input,
+  #                               variables = c(paste0('f', 1:n_fac), 1:n_sp ),
+  #                               variable_column = 'sp_number',
+  #                               space_columns = c("lon", "lat"),
+  #                               time_column = 'year',
+  #                               family = tweedie(),
+  #                               spatial_domain = my_mesh,
+  #                               control = tinyVASTcontrol(gmrf="proj")), 
+  #                     error = function(e) conditionMessage(e))
 
   if(!is.character(jtVModel)) {
     
   # Save model
   save(jtVModel, file = file.path(this_model_folder, 'jtVModel.RData'))
-    
+  
   # Check residuals
-  #y_ir = replicate( n = 500, expr = jtVModel$obj$simulate()$y_i )
+  # y_ir = replicate( n = 100, expr = jtVModel$obj$simulate()$y_i )
   y_ir = simulate(jtVModel, nsim=100, type="mle-mvn")
-  res = DHARMa::createDHARMa( simulatedResponse = y_ir, 
-                              observedResponse = mod_data$bycatch, 
+  res = DHARMa::createDHARMa( simulatedResponse = y_ir,
+                              observedResponse = mod_data$bycatch,
                               fittedPredictedResponse = fitted(jtVModel) )
   png(file = file.path(this_plot_folder, 'resid_check.png'), width = img_width, 
       height = 100, res = img_res, units = 'mm')
@@ -87,7 +87,7 @@ for(m in 1:length(n_fac_vec)) {
   
   # -------------------------------------------------------------------------
   # Plot Omega (Factors):
-  n_comps = 1
+  n_comps = as.vector(jtVModel$tmb_inputs$tmb_data$components_e)
   if(n_comps == 1) omega_slot_vec = 'omega_sc'
   if(n_comps == 2) omega_slot_vec = c('omega_sc', 'omega2_sc')
   for(cp in seq_along(omega_slot_vec)) {
