@@ -18,7 +18,11 @@ library(corrplot)
 library(car)
 library(future)
 library(tidyr)
-source('code/parameters_for_plots.R')
+library(ggdendro)
+library(scales)
+library(fpc)
+library(factoextra)
+source('code/2_multi/parameters_for_plots.R')
 source('code/aux_functions.R')
 
 # Define plot and data folder:

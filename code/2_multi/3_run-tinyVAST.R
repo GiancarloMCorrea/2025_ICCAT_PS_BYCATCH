@@ -54,7 +54,6 @@ for(m in 1:length(n_fac_vec)) {
   save(jtVModel, file = file.path(this_model_folder, 'jtVModel.RData'))
   
   # Check residuals
-  # y_ir = replicate( n = 100, expr = jtVModel$obj$simulate()$y_i )
   y_ir = simulate(jtVModel, nsim=100, type="mle-mvn")
   res = DHARMa::createDHARMa( simulatedResponse = y_ir,
                               observedResponse = mod_data$bycatch,
@@ -100,6 +99,7 @@ for(m in 1:length(n_fac_vec)) {
                        type_fac = paste0('factor_', i))
       plot_dat = rbind(plot_dat, tmp)
     }
+    saveRDS(plot_dat, file = file.path(this_model_folder, paste0('omega', cp, '.rds')))
     plot_dat = plot_dat %>% st_as_sf(coords = c("Lon", "Lat"), crs = 4326, remove = FALSE)
     p1 = ggplot(plot_dat) + geom_sf(aes(color = omega), size = 2) + scale_colour_gradient2() + labs(color = 'Omega')
     p1 = add_sf_map(p1)
@@ -136,6 +136,7 @@ for(m in 1:length(n_fac_vec)) {
     Lhat_cf = matrix(0, nrow = n_sp, ncol = n_fac)
     theta2_vec = as.list(jtVModel$sdrep, what="Estimate")[[theta_slot]][1:(n_fac*n_sp - sum(0:(n_fac-1)))]
     Lhat_cf[lower.tri(Lhat_cf, diag=TRUE)] = theta2_vec
+    save(Lhat_cf, file = file.path(this_model_folder, paste0('loading', cp, '.RData')))
     Lhat_cf_rot = rotate_pca( L_tf = Lhat_cf )$L_tf
     # Var explained df:
     varex_vec = numeric(n_fac)
@@ -145,6 +146,7 @@ for(m in 1:length(n_fac_vec)) {
                               paste0("Factor ", 1:ncol(Lhat_cf_rot), " (", varex_vec, ")") )
     load_df = as.data.frame(Lhat_cf_rot)
     load_df$species = rownames(load_df)
+    saveRDS(load_df, file = file.path(this_model_folder, paste0('rotated_loading', cp, '.rds')))
     load_df = pivot_longer(load_df, cols = starts_with("Factor"), names_to = 'Factor', values_to = 'loading')
 
     p1 = ggplot(data = load_df) + geom_col(aes(x = species, y = loading), position = 'dodge') +
