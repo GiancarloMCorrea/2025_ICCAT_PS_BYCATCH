@@ -60,17 +60,7 @@ moran_data = weight_data_clean %>% group_by(year, sp_name) %>%
   summarise(moran_pval = get_moran(bycatch, lon, lat),
             n_zero = length(which(bycatch == 0)),
             porc_zero = n_zero/n() )
-moran_data = moran_data %>% mutate(moran_sig = ifelse(moran_pval <= 0.05, 'sig', 'not sig'))
 saveRDS(moran_data, file = file.path(data_folder, 'moran_data_weight.rds'))
-p1 = ggplot(data = moran_data, aes(x = year, y = moran_pval)) +
-  geom_point(aes(color = moran_sig)) +
-  scale_x_continuous(breaks = seq(from = 2014, to = 2022, by = 4)) +
-  xlab(NULL) + ylab('Moran I p-value') +
-  theme(legend.position = 'none') +
-  facet_wrap(~ sp_name) 
-ggsave(paste0('moran_weight', img_type), path = plot_folder, plot = p1,
-       width = img_width*1.5, height = 180, units = 'mm', dpi = img_res)
-
 
 # -------------------------------------------------------------------------
 # Define modelling categories
@@ -89,14 +79,7 @@ sel_sp_data = sel_sp_data %>% arrange(desc(tot_bycatch))
 # Calculate cumulative percentage:
 sel_sp_data = sel_sp_data %>% 
   mutate(cum_perc = cumsum(tot_bycatch)/sum(tot_bycatch) * 100)
-sel_sp_data = sel_sp_data %>% filter(cum_perc < 99)
-View(sel_sp_data)
 saveRDS(sel_sp_data, file = file.path(data_folder, 'model_cat_sp.rds'))
-
-# -------------------------------------------------------------------------
-
-# Include final species with spatial autocorrelation
-weight_data_clean = weight_data_clean %>% filter(sp_name %in% sel_sp_data$sp_name)
 
 # -------------------------------------------------------------------------
 # Save created data:

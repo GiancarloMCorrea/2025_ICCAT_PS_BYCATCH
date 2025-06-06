@@ -9,21 +9,32 @@ n_fac_vec = 2:5
 # -------------------------------------------------------------------------
 # Read data in:
 weight_data = readRDS(file = file.path(data_folder, 'weight_data.rds'))
+effPoints = readRDS(file = file.path(data_folder, 'effPoints.rds')) # for prediction
+load(file.path(data_folder, 'MyGrid.RData'))
+
+# -------------------------------------------------------------------------
+# Species rank:
 selsp_data = readRDS(file.path(data_folder, 'model_cat_sp.rds'))
-# selsp_data = selsp_data %>% filter(!sp_name %in% "E. alletteratus")
-n_sp = nrow(selsp_data)
+View(selsp_data)
+# Select the first XX species to include in model
+n_sp = 17
 
 # -------------------------------------------------------------------------
 # Filter species:
-mod_data = weight_data
-# Filter to try model:
-mod_data = mod_data %>% filter(sp_name %in% selsp_data$sp_name[1:n_sp])
+mod_data = weight_data %>% filter(sp_name %in% selsp_data$sp_name[1:n_sp])
 # Define sp ID:
 mod_data = mod_data %>% mutate(sp_number = factor(sp_name, levels = selsp_data$sp_name[1:n_sp], labels = 1:n_sp)) %>% 
               mutate(sp_number = as.integer(as.character(sp_number)))
 # Factor some columns:
 mod_data = mod_data %>% mutate(fsp = factor(sp_number), fyear = factor(year))
 mod_data = as.data.frame(mod_data)
+
+# Prepare eff data for prediction in multispecies model:
+effPoints_multi = sdmTMB::replicate_df(effPoints, time_name = 'sp_name', time_values = selsp_data$sp_name[1:n_sp])
+effPoints_multi = effPoints_multi %>% mutate(sp_number = factor(sp_name, levels = selsp_data$sp_name[1:n_sp], labels = 1:n_sp)) %>% 
+                      mutate(sp_number = as.integer(as.character(sp_number)))
+# Factor some columns:
+effPoints_multi = effPoints_multi %>% mutate(fsp = factor(sp_number), fyear = factor(year)) %>% as.data.frame
 
 # Make mesh
 my_mesh = fm_mesh_2d( mod_data[,c('lon', 'lat')], cutoff = mesh_cutoff )

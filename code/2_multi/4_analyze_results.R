@@ -65,6 +65,51 @@ ggsave(filename = paste0('Figure_summ', sel_comp, img_type), path = plot_folder,
 # -------------------------------------------------------------------------
 # Make predictions by species:
 
+# Load Grid:
+load(file.path(data_folder, 'MyGrid.RData'))
+
+# Read joint predictions:
+joint_data = readRDS(file.path(model_folder, sel_nfac, 'predictions.rds'))
+joint_data$type_model = 'Joint'
+
+# Read single predictions:
+list_sp = list.files(file.path(model_folder, 'single'))
+save_pred = list()
+for(i in 1:length(list_sp)) {
+  save_pred[[i]] = readRDS(file.path(model_folder, 'single', list_sp[i], 'predictions.rds'))
+}
+save_pred = bind_rows(save_pred)
+save_pred$type_model = 'Single'
+
+# Make plot:
+plot_data = bind_rows(joint_data, save_pred)
+all_sp = unique(plot_data$sp_name)
+save_plot = list()
+for(k in 1:length(all_sp)) {
+  tmp_dat = plot_data %>% filter(sp_name == all_sp[k])
+  grid_dat = left_join(MyGrid, tmp_dat, by = 'ID')
+  p1 = ggplot(grid_dat) + geom_sf(aes(color = pred, fill = pred)) + 
+    scale_colour_viridis() + scale_fill_viridis() + 
+    guides(color = 'none') + 
+    theme_void() +
+    labs(fill = NULL) +
+    theme(legend.background = element_rect(fill = "transparent",
+                                           color="transparent"),
+          legend.position = c(0.15, 0.55),
+          legend.key.height = unit(0.25, 'cm'),
+          legend.key.width = unit(0.25, 'cm'),
+          legend.text = element_text(size=5),
+          strip.text.y = element_text(angle = 90)) 
+  p1 = add_sf_map(p1)
+  p1 = p1 + facet_grid(rows = vars(type_model), cols = vars(sp_name), switch = "y")
+  save_plot[[k]] = p1
+}
+
+merged_1 = do.call("grid.arrange", c(save_plot[1:8], nrow = 1))
+merged_2 = do.call("grid.arrange", c(save_plot[9:16], nrow = 1))
+merged_plot = grid.arrange(merged_1, merged_2, ncol = 1)
+ggsave(filename = paste0('predicted', img_type), path = plot_folder, plot = merged_plot, 
+       width = img_width*1.5, height = 135, units = 'mm', dpi = img_res)
 
 
 # -------------------------------------------------------------------------

@@ -175,6 +175,31 @@ for(m in 1:length(n_fac_vec)) {
     dev.off()
   }
   
+  # Make predictions:
+  pred_df = effPoints_multi
+  pred_df$mu_g = predict(jtVModel, newdata = pred_df, what = "mu_g")
+  plot_dat = pred_df %>% group_by(sp_name, ID) %>% summarise(pred = sum(mu_g), .groups = 'drop')
+  # Save predictions:
+  saveRDS(plot_dat, file = file.path(this_model_folder, 'predictions.rds'))
+  
+  # Plot:
+  save_plot = list()
+  for(k in 1:n_sp) {
+    tmp_dat = plot_dat %>% filter(sp_name == selsp_data$sp_name[k])
+    grid_dat = left_join(MyGrid, tmp_dat, by = 'ID')
+    p1 = ggplot(grid_dat) + geom_sf(aes(color = pred, fill = pred)) + 
+      scale_colour_viridis() + scale_fill_viridis() + 
+      guides(color = 'none') + 
+      labs(fill = 'pred', title = selsp_data$sp_name[k]) +
+      theme_void() +
+      theme(legend.background = element_rect(fill = "transparent")) 
+    p1 = add_sf_map(p1)
+    save_plot[[k]] = p1
+  }
+  merged_plots = do.call("grid.arrange", c(save_plot, ncol=4))
+  ggsave(filename = paste0('mu_g', img_type), path = this_plot_folder, plot = merged_plots, 
+         width = img_width*1.25, height = 200, units = 'mm', dpi = img_res)
+  
   cat("Nfac finished:", n_fac, "\n")
   
   } # conditional
