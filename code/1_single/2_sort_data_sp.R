@@ -62,7 +62,6 @@ weight_data$sp_name[weight_data$sp_name == 'o. Carcharhinidae'] <- 'Carcharhinid
 weight_data$sp_name[weight_data$sp_name == 'o. Scombridae'] <- 'Scombridae'
 weight_data$sp_name[weight_data$sp_name == 'o. shark'] <- 'Elasmobranchii'
 weight_data$sp_name[weight_data$sp_name == 's. turtles'] <- 'Chelonioidea'
-weight_data$sp_name[weight_data$sp_name == 'Sphyrnidae'] <- 'Sphyraenidae' # combine in one group
 weight_data$sp_name[weight_data$sp_name == 'Uraspis'] <- 'Uraspis spp.' 
 unique(weight_data$sp_name)
 
@@ -74,6 +73,12 @@ weight_data_clean = weight_data %>%
                   sst_nonstd = mean(sst_nonstd), 
                   trop_catch_nonstd = mean(trop_catch_nonstd),
                   bycatch=sum(bycatch))
+
+# Delete if any species has zero bycatch:
+del_sp = weight_data_clean %>% 
+  group_by(sp_name) %>% summarise(tot_bycatch = sum(bycatch, na.rm = TRUE)) %>%
+  filter(tot_bycatch == 0) %>% pull(sp_name)
+weight_data_clean = weight_data_clean %>% filter(!sp_name %in% del_sp)
 
 # -------------------------------------------------------------------------
 # Save created data:

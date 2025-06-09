@@ -4,7 +4,7 @@ rm(list = ls())
 this_type = 'FOB'
 source('code/2_multi/load_libs.R')
 mesh_cutoff = 2.5
-n_fac_vec = 2:5
+n_fac_vec = 2:4
 
 # -------------------------------------------------------------------------
 # Read data in:

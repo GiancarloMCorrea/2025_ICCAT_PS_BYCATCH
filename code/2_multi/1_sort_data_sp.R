@@ -36,7 +36,6 @@ weight_data$sp_name[weight_data$sp_name == 'o. Carcharhinidae'] <- 'Carcharhinid
 weight_data$sp_name[weight_data$sp_name == 'o. Scombridae'] <- 'Scombridae'
 weight_data$sp_name[weight_data$sp_name == 'o. shark'] <- 'Elasmobranchii'
 weight_data$sp_name[weight_data$sp_name == 's. turtles'] <- 'Chelonioidea'
-weight_data$sp_name[weight_data$sp_name == 'Sphyrnidae'] <- 'Sphyraenidae' # combine in one group
 weight_data$sp_name[weight_data$sp_name == 'Uraspis'] <- 'Uraspis spp.' 
 
 # Combine per id set:
@@ -44,6 +43,11 @@ weight_data_clean = weight_data %>%
         group_by(id_set,ID,year,quarter,vessel_code,sp_name) %>%
         summarise(bycatch=sum(bycatch), lon = mean(lon), lat = mean(lat))
 
+# Delete if any species has zero bycatch:
+del_sp = weight_data_clean %>% 
+  group_by(sp_name) %>% summarise(tot_bycatch = sum(bycatch, na.rm = TRUE)) %>%
+  filter(tot_bycatch == 0) %>% pull(sp_name)
+weight_data_clean = weight_data_clean %>% filter(!sp_name %in% del_sp)
 
 # -------------------------------------------------------------------------
 # define sp to be deleted from dataset (usually target species)
@@ -53,29 +57,14 @@ target_sp = c('K. pelamis', 'T. albacares', 'T. obesus',
 weight_data_clean = weight_data_clean %>% filter(!sp_name %in% target_sp)
 
 # -------------------------------------------------------------------------
-# Now select species to be included in model
-
-# Find years with zero presence and Moran I's p-value:
-moran_data = weight_data_clean %>% group_by(year, sp_name) %>% 
-  summarise(moran_pval = get_moran(bycatch, lon, lat),
-            n_zero = length(which(bycatch == 0)),
-            porc_zero = n_zero/n() )
-saveRDS(moran_data, file = file.path(data_folder, 'moran_data_weight.rds'))
-
-# -------------------------------------------------------------------------
 # Define modelling categories
-n_years = length(unique(moran_data$year))
-sel_sp_data = moran_data %>% filter(!is.na(moran_pval)) %>% 
-  group_by(sp_name) %>%
-  summarise(n_years = n(),
-            prop_zero_per_year = mean(porc_zero),
-            n_years_spat_cor = sum(moran_pval <= 0.05)) %>% 
-  arrange(desc(n_years_spat_cor) )
-totby_data = weight_data_clean %>% group_by(sp_name) %>% 
-  summarise(tot_bycatch = sum(bycatch, na.rm = TRUE)) %>% 
+n_years = length(unique(weight_data_clean$year))
+# Find number of years with presence:
+sel_sp_data = weight_data_clean %>% 
+  group_by(sp_name) %>% 
+  summarise(n_years = n_distinct(year), 
+            tot_bycatch = sum(bycatch, na.rm = TRUE)) %>%
   arrange(desc(tot_bycatch))
-sel_sp_data = left_join(sel_sp_data, totby_data, by = 'sp_name')
-sel_sp_data = sel_sp_data %>% arrange(desc(tot_bycatch))
 # Calculate cumulative percentage:
 sel_sp_data = sel_sp_data %>% 
   mutate(cum_perc = cumsum(tot_bycatch)/sum(tot_bycatch) * 100)

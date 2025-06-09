@@ -134,10 +134,10 @@ for(m in 1:length(n_fac_vec)) {
   for(cp in seq_along(theta_slot_vec)) {
     theta_slot = theta_slot_vec[cp]
     Lhat_cf = matrix(0, nrow = n_sp, ncol = n_fac)
-    theta2_vec = as.list(jtVModel$sdrep, what="Estimate")[[theta_slot]][1:(n_fac*n_sp - sum(0:(n_fac-1)))]
+    theta2_vec = as.list(jtVModel$sdrep, what="Estimate")[[theta_slot]] # [1:(n_fac*n_sp - sum(0:(n_fac-1)))]
     Lhat_cf[lower.tri(Lhat_cf, diag=TRUE)] = theta2_vec
     save(Lhat_cf, file = file.path(this_model_folder, paste0('loading', cp, '.RData')))
-    Lhat_cf_rot = rotate_pca( L_tf = Lhat_cf )$L_tf
+    Lhat_cf_rot = rotate_pca( L_tf = Lhat_cf,  order="decreasing" )$L_tf
     # Var explained df:
     varex_vec = numeric(n_fac)
     for(k in 1:n_fac) varex_vec[k] = paste0(round(100*sum(Lhat_cf_rot[,k]^2)/sum(Lhat_cf_rot^2),1), '%')
