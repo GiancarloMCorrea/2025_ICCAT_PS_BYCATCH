@@ -22,6 +22,7 @@ library(ggdendro)
 library(scales)
 library(fpc)
 library(factoextra)
+library(rphylopic)
 source('code/2_multi/parameters_for_plots.R')
 source('code/aux_functions.R')
 

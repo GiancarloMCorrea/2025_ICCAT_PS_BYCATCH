@@ -139,3 +139,60 @@ ggsave(filename = paste0('predicted', img_type), path = plot_folder, plot = merg
 # out = svd(V_tot)
 # Lhat_cf_rot = rotate_pca( L_tf = out$v[,1:2], order = 'decreasing' )$L_tf
 # lines(Lhat_cf_rot[,1], type = 'h', col = 3, lwd = 2)
+
+
+# -------------------------------------------------------------------------
+# Make pretty map with species silhouettes:
+sel_comp = '1'
+# Get fish images:
+s_barracuda = get_uuid(name = "Sphyraena", n = 1)
+s_barracuda = get_phylopic(uuid = s_barracuda)
+a_solandri = get_uuid(name = "Acanthocybium solandri", n = 1)
+a_solandri = get_phylopic(uuid = a_solandri)
+sphyrnidae = get_uuid(name = "Sphyrnidae", n = 1)
+sphyrnidae = get_phylopic(uuid = sphyrnidae)
+chelonioidea = get_uuid(name = "Chelonioidea", n = 1)
+chelonioidea = get_phylopic(uuid = chelonioidea)
+molidae = get_uuid(name = "Molidae", n = 1)
+molidae = get_phylopic(uuid = molidae)
+
+# Read omega data:
+omega = readRDS(file.path(model_folder, sel_nfac, paste0('omega', sel_comp,'.rds')))
+
+# Make plot:
+text_size = 1.5
+alpha_img = 0.7
+plot_dat = omega %>% filter(type_fac == 'factor_1') %>% 
+  st_as_sf(coords = c("Lon", "Lat"), crs = 4326, remove = FALSE)
+m1 = ggplot(plot_dat) + geom_sf(aes(color = omega), size = 3) + 
+  scale_colour_gradient2(low = alpha("blue", alpha=0.1), high = alpha("red", alpha=0.1)) + 
+  theme_classic() +
+  labs(color = NULL) + theme(legend.position = 'none') 
+m1 = add_sf_map(m1)
+m1 = m1 + 
+  add_phylopic(x = -10, y = 0, img = s_barracuda, width = 16, alpha = alpha_img) +
+  add_phylopic(x = -20, y = 3, img = a_solandri, width = 16, alpha = alpha_img) +
+  add_phylopic(x = 8, y = -17, img = sphyrnidae, width = 18, alpha = alpha_img) +
+  add_phylopic(x = 10, y = -7, img = chelonioidea, width = 8, angle = 90, alpha = alpha_img) +
+  add_phylopic(x = 2, y = -10, img = molidae, width = 8, alpha = alpha_img) +
+  add_phylopic(x = -21, y = 23, img = sphyrnidae, width = 18, alpha = alpha_img) +
+  add_phylopic(x = -17.5, y = 27, img = chelonioidea, width = 8, angle = 90, alpha = alpha_img) +
+  add_phylopic(x = -21, y = 17, img = molidae, width = 8, alpha = alpha_img)
+m1 = m1 + annotate("text", x = -10, y = 0, label = "italic(S.~barracuda)", 
+                   size = text_size, color = "white", parse = TRUE) +
+  annotate("text", x = -20, y = 3, label = "italic(A.~solandri)", 
+           size = text_size, color = "white", parse = TRUE) +
+  annotate("text", x = 7, y = -17.4, label = "Sphyrnidae", 
+                   size = text_size, color = "white") +
+  annotate("text", x = 10, y = -7, label = "Chelonioidea", 
+                   size = text_size, color = "white") +
+  annotate("text", x = 2, y = -10, label = "Molidae", 
+                   size = text_size, color = "white") +
+  annotate("text", x = -22, y = 22.6, label = "Sphyrnidae", 
+                   size = text_size, color = "white") +
+  annotate("text", x = -17.5, y = 27, label = "Chelonioidea", 
+                   size = text_size, color = "white") +
+  annotate("text", x = -21, y = 17, label = "Molidae", 
+                   size = text_size, color = "white")
+ggsave(filename = paste0('Figure_map_sp', sel_comp, img_type), path = plot_folder, plot = m1, 
+       width = img_width*0.5, height = 80, units = 'mm', dpi = img_res)

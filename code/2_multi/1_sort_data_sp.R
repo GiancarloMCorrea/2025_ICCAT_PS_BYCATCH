@@ -50,10 +50,10 @@ del_sp = weight_data_clean %>%
 weight_data_clean = weight_data_clean %>% filter(!sp_name %in% del_sp)
 
 # -------------------------------------------------------------------------
-# define sp to be deleted from dataset (usually target species)
+# define sp to be deleted from dataset (usually target or tuna-like species)
 sort(unique(weight_data_clean$sp_name))
 target_sp = c('K. pelamis', 'T. albacares', 'T. obesus',
-              'Auxis spp.', 'T. alalunga')
+              'Auxis spp.', 'T. alalunga', 'E. alletteratus')
 weight_data_clean = weight_data_clean %>% filter(!sp_name %in% target_sp)
 
 # -------------------------------------------------------------------------
