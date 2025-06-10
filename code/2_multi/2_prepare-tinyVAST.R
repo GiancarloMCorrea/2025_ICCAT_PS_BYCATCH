@@ -17,7 +17,7 @@ load(file.path(data_folder, 'MyGrid.RData'))
 selsp_data = readRDS(file.path(data_folder, 'model_cat_sp.rds'))
 View(selsp_data)
 # Select the first XX species to include in model
-n_sp = 17
+n_sp = 18
 
 # -------------------------------------------------------------------------
 # Filter species:
