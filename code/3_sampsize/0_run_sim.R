@@ -76,6 +76,10 @@ for(j in 1:nSims) {
       # Read simulated values:
       sim_matrix = save_sim_matrix[[isp]]
       
+      # Estimate true values:
+      true_data = data.frame(year = effPoints$year, true = sim_matrix[, j])
+      true_data = true_data %>% group_by(year) %>% summarise(true = sum(true), .groups = 'drop')
+      
       # Now calculate bycatch per year for each sim:
       obs_data$bycatch = sim_matrix[obs_data$id_obs, j]
       obs_data$sp_name = these_sp[isp]
@@ -89,6 +93,7 @@ for(j in 1:nSims) {
       est_df = est_df %>% group_by(year, sp_name) %>% summarise(est = sum(est), .groups = 'drop')
       est_df$sim = paste0("sim_", j)
       est_df$samp_frac = frac_vector[i]
+      est_df = left_join(est_df, true_data, by = c("year"))
       save_sim[[isp]] = est_df
       
     } # Loop over species

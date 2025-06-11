@@ -18,32 +18,52 @@ for(k in seq_along(these_frac)) {
 }
 # Merge data:
 est_sim = bind_rows(save_sim)
+# Calculate relative error:
+est_sim = est_sim %>% mutate(re = ((est - true)/true)*100)
+# Remove NaN because true = 0:
+est_sim = est_sim %>% filter(!is.nan(re))
+
 # Aggregate over years:
-est_sim = est_sim %>% group_by(sp_name, sim, samp_frac) %>% summarise(est = sum(est), .groups = 'drop')
-est_sim = est_sim %>% mutate(samp_frac = factor(samp_frac, levels = sort(unique(samp_frac)))) 
+agg_est_sim = est_sim %>% group_by(sp_name, sim, samp_frac) %>% 
+  summarise(est = sum(est), true = sum(true), .groups = 'drop')
+agg_est_sim = agg_est_sim %>% mutate(re = ((est - true)/true)*100)
+agg_est_sim = agg_est_sim %>% filter(!is.nan(re))
+agg_est_sim = agg_est_sim %>% mutate(samp_frac = factor(samp_frac, levels = sort(unique(samp_frac)))) 
 
 
 # -------------------------------------------------------------------------
-# Now read true values:
-these_sp = sort(unique(est_sim$sp_name))
-true_values = list()
-for(isp in seq_along(these_sp)) {
-  # Read true values:
-  true_values[[isp]] = read.csv(file = file.path("model/1_single", this_type, these_sp[isp], 'pred_est_time.csv'))
-  true_values[[isp]]$sp_name = these_sp[isp]
-}
-# Merge:
-true_values = bind_rows(true_values)
-true_values = true_values %>% group_by(sp_name) %>% summarise(est = sum(est), .groups = 'drop')
+# Now read sdmTMB values:
+# these_sp = sort(unique(est_sim$sp_name))
+# true_values = list()
+# for(isp in seq_along(these_sp)) {
+#   # Read sdmTMB values:
+#   true_values[[isp]] = read.csv(file = file.path("model/1_single", this_type, these_sp[isp], 'pred_est_time.csv'))
+#   true_values[[isp]]$sp_name = these_sp[isp]
+# }
+# # Merge:
+# true_values = bind_rows(true_values)
+# true_values = true_values %>% group_by(sp_name) %>% summarise(est = sum(est), .groups = 'drop')
 
 # -------------------------------------------------------------------------
 
 # Plot:
-p1 = ggplot(data = est_sim, aes(x = samp_frac, y = est)) +
+p1 = ggplot(data = agg_est_sim, aes(x = samp_frac, y = re)) +
   geom_boxplot(outlier.size = 0.5) +
-  geom_hline(data = true_values, aes(yintercept = est), color = 'red', linetype = 'dashed') +
+  geom_hline(yintercept = 0, color = 'red', linetype = 'dashed') +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size = 8)) +
-  labs(x = "Sampling fraction", y = "Estimated bycatch") +
+  labs(x = "Sampling fraction", y = "Relative error (%)") +
   facet_wrap(~ sp_name, scales = 'free_y') 
-ggsave(paste0('estimates', img_type), plot = p1, path = plot_folder,
+ggsave(paste0('rel_error', img_type), plot = p1, path = plot_folder,
        width = img_width*1.5, height = 160, units = 'mm', dpi = img_res)
+
+# -------------------------------------------------------------------------
+
+# Plot:
+# p1 = ggplot(data = est_sim, aes(x = samp_frac, y = est)) +
+#   geom_boxplot(outlier.size = 0.5) +
+#   geom_hline(data = true_values, aes(yintercept = est), color = 'red', linetype = 'dashed') +
+#   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size = 8)) +
+#   labs(x = "Sampling fraction", y = "Estimated bycatch") +
+#   facet_wrap(~ sp_name, scales = 'free_y') 
+# ggsave(paste0('estimates', img_type), plot = p1, path = plot_folder,
+#        width = img_width*1.5, height = 160, units = 'mm', dpi = img_res)
