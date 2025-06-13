@@ -44,22 +44,40 @@ for(k in seq_along(all_sp)) {
 }
 # Merge:
 coef_df = bind_rows(coef_df)
+coef_df = coef_df %>% mutate(family = if_else(category == 3, 'Tweedie', 'Hurdle approach'))
+
+# Save data for plotting later
+sp_data = coef_df %>% group_by(model) %>% summarise(family = unique(family))
+std_data = rbind(expand.grid(model = unique(coef_df$model), family = 'Hurdle approach',
+                             component = c('Component 1', 'Component 2')),
+                 expand.grid(model = unique(coef_df$model), family = 'Tweedie',
+                             component = c('Component 1')))
+
+# Continue processing:
 coef_df = coef_df %>% filter(!grepl(pattern = "fyear", x = coef_df$term))
 coef_df = coef_df %>% filter(!grepl(pattern = "quarter", x = coef_df$term))
 coef_df = coef_df %>% mutate(term = factor(term, levels = c('sst', 'trop_catch'), 
                                            labels = c('SST', 'Target catch')),
                              component = factor(component, levels = c('1', '2'), 
                                            labels = c('Component 1', 'Component 2')))
-# Add asterisk after sp name for tweedie models:
-coef_df = coef_df %>% mutate(model = if_else(category == 3, paste0(model, '*'), model))
+# Create base data frame with all sp
+coef_df = coef_df %>% select(term, estimate, component, model, family)
+std_data = replicate_df(std_data, time_name = 'term', time_values = c('Target catch', 'SST'))
+plot_data = left_join(std_data, coef_df)
+# Put zero for species with coeff=0
+this_family = 'Hurdle approach'
+these_sp = sp_data %>% filter(family == this_family) %>% pull(model)
+plot_data = plot_data %>% mutate(estimate = if_else(family == this_family & model %in% these_sp & is.na(estimate), 0, estimate))
+this_family = 'Tweedie'
+these_sp = sp_data %>% filter(family == this_family) %>% pull(model)
+plot_data = plot_data %>% mutate(estimate = if_else(family == this_family & model %in% these_sp & is.na(estimate), 0, estimate))
 
-
-p2 = ggplot(data = coef_df, aes(x = term, y = model, fill = estimate)) +
-  geom_tile(color = NA) +
+p2 = ggplot(data = plot_data, aes(x = term, y = model, fill = estimate)) +
+  geom_tile(color = NA, na.rm=TRUE) +
   xlab(NULL ) + ylab(NULL) +
   scale_fill_gradient2(low = "blue", high = "red") +
   labs(fill = expression(beta)) +
   theme_classic() +
-  facet_grid(~ component)
+  facet_nested(~ family + component)
 ggsave(file.path(plot_folder, 'table_effect.png'), width = img_width, 
-       plot = p2, height = 180, units = 'mm', dpi = img_res)
+       plot = p2, height = 160, units = 'mm', dpi = img_res)
