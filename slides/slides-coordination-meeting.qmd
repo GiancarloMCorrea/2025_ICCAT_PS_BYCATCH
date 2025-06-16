@@ -186,7 +186,7 @@ These steps were repeated 100 times per taxon:
 
 ## Preliminary results
 
-![FOB set type](../figures/3_sampsize/FOB/nyr_missing.png){fig-align="center"}
+![Number of years with missing information (FOB set type)](../figures/3_sampsize/FOB/nyr_missing.png){fig-align="center"}
 
 ## Discussion
 
