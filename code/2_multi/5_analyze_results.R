@@ -29,15 +29,16 @@ rownames(Lhat_cf) = rot_load$species
 Dist = dist(Lhat_cf, diag=TRUE, upper=TRUE)
 hc = hclust(Dist)
 pamk_best = pamk(Dist)
-h1 = fviz_dend(hc, k = pamk_best$nc, 
-          cex = 0.6, 
-          labels_track_height = 0.25,
-          main = NULL,
-          rect = TRUE,
-          k_colors = c("#2E9FDF","#00AFBB", "#E7B800" ,"#FC4E07"),
-          color_labels_by_k = TRUE, 
-          ggtheme = theme_classic() 
-)
+# h1 = fviz_dend(hc, k = pamk_best$nc, 
+#           cex = 0.6, 
+#           labels_track_height = 0.25,
+#           main = NULL,
+#           rect = TRUE,
+#           k_colors = c("#2E9FDF","#00AFBB", "#E7B800" ,"#FC4E07"),
+#           color_labels_by_k = TRUE, 
+#           ggtheme = theme_classic() 
+# )
+h1 = ggdendrogram(hc, rotate = FALSE, size = 2)
 
 # Plot omegas:
 omega = readRDS(file.path(model_folder, sel_nfac, paste0('omega', sel_comp,'.rds')))

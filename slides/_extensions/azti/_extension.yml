@@ -10,7 +10,7 @@ contributes:
       slide-number: c
       self-contained: false
       theme: azti.scss
-      footer: "&#169; AZTI 2024. Todos los derechos reservados."
+      footer: "&#169; AZTI 2025. Todos los derechos reservados."
       logo: __AZTI_principal.png
       pointer:
         pointerSize: 18
