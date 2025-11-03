@@ -9,8 +9,8 @@
 <link href="slides-coordination-meeting_files/libs/quarto-html/quarto-syntax-highlighting-ed04999718f06b735b1f8009dce43b94.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.6.40">
 
-  <meta name="author" content="Giancarlo M. Correa, Jon Ruiz, add coauthors">
-  <title>Bycatch analyses of the Spanish purse-seine tuna fishery</title>
+  <meta name="author" content="Giancarlo M. Correa, Jon Ruiz, María Lourdes Ramos">
+  <title>Bycatch analyses of the Spanish purse-seine tuna fishery in the Atlantic Ocean</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -167,8 +167,8 @@
 
 <img class="title-logo" src="_extensions/azti/__AZTI_Pastilla_WebBlanco.png">
 
-  <span class="title">Bycatch analyses of the Spanish purse-seine tuna fishery</span>
-  <p><span class="author">Giancarlo M. Correa, Jon Ruiz, add coauthors</span></p>
+  <span class="title">Bycatch analyses of the Spanish purse-seine tuna fishery in the Atlantic Ocean</span>
+  <p><span class="author">Giancarlo M. Correa, Jon Ruiz, María Lourdes Ramos</span></p>
 
 </div>
 
@@ -201,8 +201,8 @@
 <p>By taxon, we followed these steps:</p>
 <div class="cell">
 <div class="cell-output-display">
-<div class="grViz html-widget html-fill-item" id="htmlwidget-6b309d89cd32e9ae12eb" style="width:960px;height:480px;"></div>
-<script type="application/json" data-for="htmlwidget-6b309d89cd32e9ae12eb">{"x":{"diagram":"digraph {\n\ngraph [layout = dot, rankdir = TB];\n\n# define the global styles of the nodes. We can override these in box if we wish\nnode [shape = rectangle, style = filled, fontsize=25];\n\nDAT1 [label = \"Observer data and \n covariates (SST and target catch)\", fillcolor = peachpuff];\nMOD1 [label = \"sdmTMB model \n &Delta; LN (&epsilon; and &omega;)\", fillcolor = Pink];\nMOD2 [label = \"sdmTMB model \n &Delta; LN (&omega;)\", fillcolor = Pink];\nMOD3 [label = \"sdmTMB model \n Tweedie (&omega;)\", fillcolor = Pink];\nA1 [label = \"No model-based estimate \n Use ratio estimator\", fillcolor = lavender];\nQ1 [label = \"Did the model converge?\", fillcolor = palegreen];\nQ2 [label = \"Did the model converge?\", fillcolor = palegreen];\nQ3 [label = \"Did the model converge?\", fillcolor = palegreen];\nSTEP2 [label =  \"Remove non-significant \n covariates and run again\", fillcolor = Pink];\nPRED1 [label =  \"Predict using effort data\", fillcolor = lightskyblue2];\nPRED2 [label =  \"Aggregate over space \n and get annual estimates\", fillcolor = lightskyblue2];\n\n{rank = max; Q3 A1};\n{rank = same; Q2 MOD3};\n{rank = same; Q1 STEP2 PRED1 PRED2};\n{rank = min; DAT1};\n\n# edge definitions with the node IDs\nd1 [shape=point,width=0.01,height=0.01];\nd2 [shape=point,width=0.01,height=0.01];\nd3 [shape=point,width=0.01,height=0.01];\nDAT1 -> {MOD1};\nMOD1 -> {Q1};\nQ1 -> {MOD2}[label=\"no\"];\nMOD2 -> {Q2};\nQ2 -> {MOD3}[label=\"no\"];\nMOD3 -> {Q3};\nQ3 -> {A1}[label=\"no\"];\n{Q1 Q2 Q3} -> {STEP2}[label=\"yes\"];\nSTEP2 -> {PRED1};\nPRED1 -> {PRED2};\n\n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div class="grViz html-widget html-fill-item" id="htmlwidget-4fc29dc0d6337a32bfd4" style="width:960px;height:480px;"></div>
+<script type="application/json" data-for="htmlwidget-4fc29dc0d6337a32bfd4">{"x":{"diagram":"digraph {\n\ngraph [layout = dot, rankdir = TB];\n\n# define the global styles of the nodes. We can override these in box if we wish\nnode [shape = rectangle, style = filled, fontsize=25];\n\nDAT1 [label = \"Observer data and \n covariates (SST and target catch)\", fillcolor = peachpuff];\nMOD1 [label = \"sdmTMB model \n &Delta; LN (&omega; and &epsilon;)\", fillcolor = Pink];\nMOD2 [label = \"sdmTMB model \n &Delta; LN (&omega;)\", fillcolor = Pink];\nMOD3 [label = \"sdmTMB model \n Tweedie (&omega;)\", fillcolor = Pink];\nA1 [label = \"No model-based estimate \n Use ratio estimator\", fillcolor = lavender];\nQ1 [label = \"Did the model converge?\", fillcolor = palegreen];\nQ2 [label = \"Did the model converge?\", fillcolor = palegreen];\nQ3 [label = \"Did the model converge?\", fillcolor = palegreen];\nSTEP2 [label =  \"Remove non-significant \n covariates and run again\", fillcolor = Pink];\nPRED1 [label =  \"Predict using effort data\", fillcolor = lightskyblue2];\nPRED2 [label =  \"Aggregate over space \n and get annual estimates\", fillcolor = lightskyblue2];\n\n{rank = max; Q3 A1};\n{rank = same; Q2 MOD3};\n{rank = same; Q1 STEP2 PRED1 PRED2};\n{rank = min; DAT1};\n\n# edge definitions with the node IDs\nd1 [shape=point,width=0.01,height=0.01];\nd2 [shape=point,width=0.01,height=0.01];\nd3 [shape=point,width=0.01,height=0.01];\nDAT1 -> {MOD1};\nMOD1 -> {Q1};\nQ1 -> {MOD2}[label=\"no\"];\nMOD2 -> {Q2};\nQ2 -> {MOD3}[label=\"no\"];\nMOD3 -> {Q3};\nQ3 -> {A1}[label=\"no\"];\n{Q1 Q2 Q3} -> {STEP2}[label=\"yes\"];\nSTEP2 -> {PRED1};\nPRED1 -> {PRED2};\n\n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 </section>
@@ -233,7 +233,7 @@
 </section>
 <section id="simulations" class="slide level2">
 <h2>Simulations</h2>
-<p>Using fitted models, we can simulate new values with observation error keeping the statistical properties and patterns of the data.</p>
+<p>Using fitted models, we can simulate new values with observation error while keeping the statistical properties and patterns of the data.</p>
 <div class="fragment">
 <p>These steps were repeated 100 times per taxon:</p>
 <div>
@@ -290,7 +290,7 @@
 <img data-src="images/SFA_example.png" class="r-stretch quarto-figure-center"><p class="caption"><span class="citation" data-cites="thorsonSpatialFactorAnalysis2015">Thorson et al. (<a href="#/references" role="doc-biblioref" onclick="">2015</a>)</span></p></section>
 <section id="spatial-factor-analysis-1" class="slide level2">
 <h2>Spatial factor analysis</h2>
-<p>Implemented using the R package <em>tinyVAST</em> <span class="citation" data-cites="thorsonTinyVASTPackageExpressive2025">(<a href="#/references" role="doc-biblioref" onclick="">Thorson et al., 2025</a>)</span>. The model follows a hurdle approach can be represented, for each component, as:</p>
+<p>Implemented using the R package <em>tinyVAST</em> <span class="citation" data-cites="thorsonTinyVASTPackageExpressive2025">(<a href="#/references" role="doc-biblioref" onclick="">Thorson et al., 2025</a>)</span>. The model follows a hurdle approach and can be represented, for each component, as:</p>
 <p><span class="math display">\[p_{s,c} = \mu(c) + \sum_{f=1}^{n_\omega}L_\omega(c,f)\omega(s,f)\]</span></p>
 <p>Where <span class="math inline">\(L\)</span> is the loading matrix, <span class="math inline">\(c\)</span> represents species, and <span class="math inline">\(f\)</span> represents factors. Used FOB bycatch data of the most common taxa from 2015 to 2023.</p>
 </section>

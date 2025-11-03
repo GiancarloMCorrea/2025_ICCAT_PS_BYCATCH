@@ -1,0 +1,229 @@
+---
+title: "Bycatch analyses of the Spanish purse-seine tuna fishery in the Atlantic Ocean"
+author: Giancarlo M. Correa, Jon Ruiz, María Lourdes Ramos
+embed-resources: false
+highlight-style: "a11y-dark"
+format: azti-revealjs
+revealjs-plugins:
+  - pointer
+include-in-header:
+  - text: |
+      <link rel = "shortcut icon" href = "azti.svg" />
+title-slide-attributes:
+    data-background-color: "#000000"
+csl: ../elsevier-harvard.csl
+execute:
+  echo: false
+  warning: false
+bibliography: ../references.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, 
+                      verbose = FALSE,
+                      message = FALSE, 
+                      warning = FALSE)
+```
+
+```{r}
+# remotes::install_github("wmoldham/rbbt") # temporarily, until error is fixed
+require(knitr)
+require(jpeg)
+require(rbbt)
+require(dplyr)
+require(flextable)
+require(kableExtra)
+options(knitr.kable.NA = '')
+```
+
+```{r}
+# remotes::install_github("wmoldham/rbbt") # temporarily, until error is fixed
+require(knitr)
+require(rbbt)
+require(dplyr)
+require(flextable)
+# This will automatically update the BIB file:
+keys = rbbt::bbt_detect_citations('slides-coordination-meeting.qmd')
+bbt_ignore = keys[grepl("fig-|tbl-|eq-|sec-", keys)]
+rbbt::bbt_update_bib(path_rmd = 'slides-coordination-meeting.qmd', 
+                     ignore = bbt_ignore, overwrite = T, translator = "bibtex")
+```
+
+## Outline
+
+<br>
+
+<br>
+
+* Annual bycatch estimates
+
+* Impacts of sampling coverage on bycatch estimates
+
+* Identification of bycatch taxa complexes based on spatial clustering
+
+# Annual bycatch estimates
+
+## Geostatistical generalized linear model
+
+<br>
+
+Implemented using the R package *sdmTMB* [@Anderson2024]. The model can be represented as:
+
+$$\mathbb{E}[y] = \mu = g^{-1}(\eta)$$
+
+$$\eta = \mathbf{X}\mathbf{\beta} + \omega_s + \varepsilon_{s,y}$$
+
+$\omega_s$ is the spatial term and $\varepsilon_{s,y}$ is the spatiotemporal term, both constrained by a geostatistical function. $s$ and $y$ represent space and year, respectively.
+
+## Modelling steps
+
+By taxon, we followed these steps:
+
+```{r}
+DiagrammeR::grViz("digraph {
+
+graph [layout = dot, rankdir = TB];
+
+# define the global styles of the nodes. We can override these in box if we wish
+node [shape = rectangle, style = filled, fontsize=25];
+
+DAT1 [label = 'Observer data and \n covariates (SST and target catch)', fillcolor = peachpuff];
+MOD1 [label = 'sdmTMB model \n &Delta; LN (&omega; and &epsilon;)', fillcolor = Pink];
+MOD2 [label = 'sdmTMB model \n &Delta; LN (&omega;)', fillcolor = Pink];
+MOD3 [label = 'sdmTMB model \n Tweedie (&omega;)', fillcolor = Pink];
+A1 [label = 'No model-based estimate \n Use ratio estimator', fillcolor = lavender];
+Q1 [label = 'Did the model converge?', fillcolor = palegreen];
+Q2 [label = 'Did the model converge?', fillcolor = palegreen];
+Q3 [label = 'Did the model converge?', fillcolor = palegreen];
+STEP2 [label =  'Remove non-significant \n covariates and run again', fillcolor = Pink];
+PRED1 [label =  'Predict using effort data', fillcolor = lightskyblue2];
+PRED2 [label =  'Aggregate over space \n and get annual estimates', fillcolor = lightskyblue2];
+
+{rank = max; Q3 A1};
+{rank = same; Q2 MOD3};
+{rank = same; Q1 STEP2 PRED1 PRED2};
+{rank = min; DAT1};
+
+# edge definitions with the node IDs
+d1 [shape=point,width=0.01,height=0.01];
+d2 [shape=point,width=0.01,height=0.01];
+d3 [shape=point,width=0.01,height=0.01];
+DAT1 -> {MOD1};
+MOD1 -> {Q1};
+Q1 -> {MOD2}[label='no'];
+MOD2 -> {Q2};
+Q2 -> {MOD3}[label='no'];
+MOD3 -> {Q3};
+Q3 -> {A1}[label='no'];
+{Q1 Q2 Q3} -> {STEP2}[label='yes'];
+STEP2 -> {PRED1};
+PRED1 -> {PRED2};
+
+}")
+```
+
+## Preliminary results
+
+![FOB set type](../figures/1_single/FOB/compare_estimates.png){fig-align="center"}
+
+## Preliminary results
+
+![FOB set type (billfish)](../figures/1_single/FOB/compare_estimates_billfishes.png){fig-align="center"}
+
+## Preliminary results
+
+![FOB set type](../figures/1_single/FOB/table_effect.png){fig-align="center"}
+
+## Preliminary results
+
+![FSC set type](../figures/1_single/FSC/compare_estimates.png){fig-align="center"}
+
+## Preliminary results
+
+![FSC set type (billfish)](../figures/1_single/FSC/compare_estimates_billfishes.png){fig-align="center"}
+
+## Discussion
+
+::: incremental
+
+- Assuming linear relationship between bycatch and target catch (at the set level) may not be appropiate
+- Modelling approach not suitable for *rare* taxa and demans fine-scale data
+- Years with zero bycatch (in observer data) will have zero estimate by model-based approach
+- Estimates for historical period may slightly change when new data is added
+
+:::
+
+# Impacts of sampling coverage on bycatch estimates
+
+## Simulations
+
+Using fitted models, we can simulate new values with observation error while keeping the statistical properties and patterns of the data.
+
+::: fragment
+
+These steps were repeated 100 times per taxon:
+
+::: incremental
+
+
+::: {style="font-size: 90%;"}
+
+1. Using effort data, we simulate new bycatch values using fitted sdmTMB model
+2. Sample sets (from 100% to 10%) stratified by quarter/year
+3. Use ratio estimator to get annual estimates from sampled data
+4. Compare estimates with true values (100% coverage)
+
+:::
+
+:::
+
+:::
+
+## Simulations
+
+![FOB set type, for all years](../figures/3_sampsize/FOB/sim_spatial/map_24.png){fig-align="center"}
+
+## Simulations
+
+![FOB set type, for all years](../figures/3_sampsize/FOB/sim_spatial/map_19.png){fig-align="center"}
+
+## Preliminary results
+
+![FOB set type](../figures/3_sampsize/FOB/bias.png){fig-align="center"}
+
+## Preliminary results
+
+![FOB set type](../figures/3_sampsize/FOB/summ_rel.png){fig-align="center"}
+
+## Preliminary results
+
+![Number of years with missing information (FOB set type)](../figures/3_sampsize/FOB/nyr_missing.png){fig-align="center"}
+
+## Discussion
+
+<br>
+
+::: incremental
+
+- Results also available for FSC set type
+- Sample by fishing trip to make simulation more realistic
+- Future analysis: explore model-based estimator (?)
+
+:::
+
+## Thank you {background-color="black"}
+
+<br> <br>
+
+<center>
+
+![](__AZTI_secundario_BlancoAmarillo.png){width="50%"}
+
+<br>
+
+[Contact:]{style="font-size:40px"} <br> [gmoron\@azti.es](mailto:gmoron@azti.es){style="font-size:40px"}
+
+</center>
+
+## References
+

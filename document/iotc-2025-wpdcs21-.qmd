@@ -1,0 +1,111 @@
+---
+title: "Impacts of the sampling coverage on bycatch estimates of the European purse seine fleet"
+authors: 
+  - name: Giancarlo M. Correa
+    affil-id: 1
+    email: gmoron@azti.es
+    corresponding: true
+  - name: Jon Ruiz
+    affil-id: 1
+  - name: Miguel Herrera
+    affil-id: 2
+  - name: Nekane Alzorriz
+    affil-id: 3
+affiliations:
+  - id: 1
+    name: AZTI, Marine Research, Basque Research and Technology Alliance (BRTA), Txatxarramendi ugartea z/g, 48395 Sukarrieta (Bizkaia), Spain
+  - id: 2
+    name: Organización Productores Asociados Grandes Atuneros Congeladores (OPAGAC), Cl. de Ayala, 54, 28001 Salamanca (Madrid), Spain
+  - id: 3
+    name: Asociación Nacional de Armadores de Buques Atuneros Congeladores (ANABAC), Txibitxiaga Kalea, 24, 48370 Bermeo (Bizkaia), Spain
+link-citations: true
+csl: ../elsevier-harvard.csl
+format:
+  pdf:
+    documentclass: scrartcl
+    toc-title: 'Contents'
+    keep-tex: true
+    fig-pos: H
+    template-partials: 
+      - title.tex
+    include-in-header:
+      text: |
+        \usepackage[noblocks]{authblk}
+        \renewcommand*{\Authsep}{, }
+        \renewcommand*{\Authand}{, }
+        \renewcommand*{\Authands}{, }
+        \renewcommand\Affilfont{\small}
+        \usepackage{lineno}
+        \usepackage{scrlayer-scrpage}
+        \rohead{IOTC-2025-WPDCS21-}
+        \usepackage{lscape}
+        \newcommand{\blandscape}{\begin{landscape}}
+        \newcommand{\elandscape}{\end{landscape}}
+geometry: "left=2.5cm,right=2.5cm,top=3cm,bottom=3cm"
+editor: source
+number-sections: true
+bibliography: ../references.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, 
+                      verbose = FALSE,
+                      message = FALSE, 
+                      warning = FALSE)
+```
+
+```{r}
+# remotes::install_github("paleolimbot/rbbt")
+require(knitr)
+require(rbbt)
+require(dplyr)
+require(flextable)
+require(this.path)
+qmd_file = this.path()
+options(knitr.kable.NA = '')
+# This will automatically update the BIB file:
+keys = rbbt::bbt_detect_citations(qmd_file)
+bbt_ignore = keys[grepl("fig-|tbl-|eq-|sec-", keys)]
+rbbt::bbt_update_bib(path_rmd = qmd_file, 
+                     ignore = bbt_ignore, overwrite = T, translator = "bibtex")
+```
+
+**Abstract**
+
+<br>
+
+
+
+<br>
+
+*Keywords*
+
+bycatch, pelagic species, spatiotemporal models, purse seine fleet, tunas
+
+\newpage
+
+# Introduction
+
+Purse seine fishing is a technique that targets and catch entire fish schools in the surface by encircling them with a fishing net called "seine". In the tropical oceans, purse seine is employed to target tropical tunas such as skipjack (*Katsuwonus pelamis*), yellowfin (*Thunnus albacares*), and bigeye (*Thunnus obesus*). In addition to target species, tropical tuna fisheries catch non-target species collectively referred to as bycatch, which can be discarded at sea, retained to be sold on local markets, or consumed on board [@hallMitigatingBycatchTuna2017]. The ratio of bycatch to target tuna catch in the purse seine fleet is considered relatively low in comparison to other fishing gears, such as longlines, that can result in substantial levels of bycatch [@amandeBycatchEuropeanPurse2010; @liuPreliminaryEstimatesBlue2008; @peatmanEstimatingTrendsMagnitudes2023]. However, the impact on pelagic populations and ecosystems may be important, especially for vulnerable long-lived species with low reproductive rates [@dulvyExtinctionRiskConservation2014]. Therefore, it is essential to conduct studies on bycatch rates and their variability over space and time; however, they are often complicated by a lack of bycatch data recorded in fisheries logbooks, taxonomic identification of bycatch species, among other factors.
+
+One of the most reliable sources of information to quantify the amount of bycatch is the use of on-board trained scientific data collectors (a.k.a. observers). When designing an observer sampling program, the level of coverage required will depend on the objectives of the observer program, which might vary from estimating bycatch of protected species, to improving bycatch and catch data for assessment of fish populations, to collecting biological data. In some cases, it may be necessary to have an exact count of the total incidental mortality of bycatch species, especially threatened or endangered species, so a 100% observer coverage may be needed. However, in most cases, a level of 100% observer coverage is not attainable, then the coverage level chosen must ensure that the total bycatch estimate is sufficiently accurate and precise. Then, assuming these observed units are representative of unobserved activity, design-based (e.g., ratio estimators, @cochranSamplingTechniques1977) or model-based (e.g., generalized linear models, @coelhoComparingGLMGLMM2020) approaches can be used to expand the observed bycatch to the remainder of the fishery. One of the main features of ratio estimators is that they do not incorporate a formal underlying statistical model (i.e. are free of any assumptions regarding data structure), and therefore are broadly used in fisheries worldwide, including tuna purse seine fisheries [@amandeBycatchEuropeanPurse2010; @amandePrecisionBycatchEstimates2012].
+
+Despite their widespread use, there are a number of potential issues in applying ratio estimators to estimate bycatch. First, using observed catches of target species or any other measure of effort implicitly makes an assumption about a linear relationship between non-target and target catches [@amandePrecisionBycatchEstimates2012; @fonteneauRelationshipCatchEffort2003]. This may be unrealistic since the distribution of catches of non-target species is often zero-inflated or has a small number of observations containing extremely high values [@ortizAlternativeErrorDistribution2004], and the liner relationship may not hold [@stockUtilitySpatialModelbased2019]. Second, the boundaries of strata used in a ratio estimator can be somewhat arbitrary whenever poststratified boundaries are used. For instance, @amandeBycatchEuropeanPurse2010 defined strata in the Atlantic Ocean based on ecological features for estimating bycatch of the tuna EU purse seine fishery, which may not be adequate for all bycatch species. Third, for rare-event bycatch species, it is common for zero bycatch events to be observed in a given year (ratio estimator is equal to 0), and when bycatch events are observed, the ratio estimator often delivers implausibly high estimates. Lastly, a final and related point is that within each stratum, bycatch rates are assumed to be uniform, while in reality they may vary by season, depth, or other factors.
+
+Spatiotemporal models are increasingly adopted in multiple fisheries applications [@grussSupportingStockAssessment2023; @thorsonGuidanceDecisionsUsing2019; @ducharme-barthImpactsFisheriesdependentSpatial2022], including undertaking bycatch analyses (e.g., @yanSpatiotemporalModelingBycatch2022). These models can provide detailed predictions for any location based on spatial autocorrelation in the observations. However, they are also complicated and require more data to generate robust predictions, which make it unsuitable for data-poor fisheries. In the majority of cases, spatially explicit model-based estimators have increased precision relative to simpler estimators that assign observations to strata [@thorsonGeostatisticalDeltageneralizedLinear2015; @thorsonAccountingSpaceTime2013]. There are a number of additional advantages of spatial models, including the ability to better quantify shifts in distribution [@thorsonModelbasedInferenceEstimating2016] and improved ability to identify fine-scale hotspots of high bycatch [@cosandey-godinApplyingBayesianSpatiotemporal2015]. For tuna fisheries, spatiotemporal models like generalized additive models (GAMs) have recently been used to obtain annual estimates of the most important bycatch species [@dumontModelingBycatchAbundance2024; @peatmanEstimatingTrendsMagnitudes2023].
+
+In this study, we implemented a simulation experiment to evaluate the impacts of different levels of sampling coverage on the annual bycatch estimates derived from design-based and model-based estimators. Our hypothesis is that model-based estimators may provide more accurate bycatch estimates under low sampling coverage scenarios. We used data from the EU purse seine tuna fishery operating in the Atlantic Ocean as study case. We performed our analyses differentiating by set type: operating on free schools or floating objects, since they have different bycatch dynamics [@peatmanEstimatingTrendsMagnitudes2023]. Our simulation experiment may be extended to other fisheries with fine-scale bycatch information and support the implementation of sampling programmes across tuna RFMOs. 
+
+# Methods
+
+We use geostatistical generalized linear mixed models (GLMMs), which specify a geostatistical model to estimate a smoothed surface representing spatial variation in the studied variable (e.g., observed bycatch per unit of effort). 
+
+
+# References
+
+::: {#refs}
+:::
+
+{{< pagebreak >}}
+
+# Tables

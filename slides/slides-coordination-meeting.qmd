@@ -1,6 +1,6 @@
 ---
-title: "Bycatch analyses of the Spanish purse-seine tuna fishery"
-author: Giancarlo M. Correa, Jon Ruiz, add coauthors
+title: "Bycatch analyses of the Spanish purse-seine tuna fishery in the Atlantic Ocean"
+author: Giancarlo M. Correa, Jon Ruiz, María Lourdes Ramos
 embed-resources: false
 highlight-style: "a11y-dark"
 format: azti-revealjs
@@ -88,7 +88,7 @@ graph [layout = dot, rankdir = TB];
 node [shape = rectangle, style = filled, fontsize=25];
 
 DAT1 [label = 'Observer data and \n covariates (SST and target catch)', fillcolor = peachpuff];
-MOD1 [label = 'sdmTMB model \n &Delta; LN (&epsilon; and &omega;)', fillcolor = Pink];
+MOD1 [label = 'sdmTMB model \n &Delta; LN (&omega; and &epsilon;)', fillcolor = Pink];
 MOD2 [label = 'sdmTMB model \n &Delta; LN (&omega;)', fillcolor = Pink];
 MOD3 [label = 'sdmTMB model \n Tweedie (&omega;)', fillcolor = Pink];
 A1 [label = 'No model-based estimate \n Use ratio estimator', fillcolor = lavender];
@@ -146,7 +146,7 @@ PRED1 -> {PRED2};
 
 ## Simulations
 
-Using fitted models, we can simulate new values with observation error keeping the statistical properties and patterns of the data.
+Using fitted models, we can simulate new values with observation error while keeping the statistical properties and patterns of the data.
 
 ::: fragment
 
@@ -209,7 +209,7 @@ These steps were repeated 100 times per taxon:
 
 ## Spatial factor analysis
 
-Implemented using the R package *tinyVAST* [@thorsonTinyVASTPackageExpressive2025]. The model follows a hurdle approach can be represented, for each component, as:
+Implemented using the R package *tinyVAST* [@thorsonTinyVASTPackageExpressive2025]. The model follows a hurdle approach and can be represented, for each component, as:
 
 $$p_{s,c} = \mu(c) + \sum_{f=1}^{n_\omega}L_\omega(c,f)\omega(s,f)$$
 

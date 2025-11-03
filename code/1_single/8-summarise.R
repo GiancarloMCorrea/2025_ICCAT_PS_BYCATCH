@@ -20,6 +20,12 @@ model_df = bind_rows(model_df)
 
 # -------------------------------------------------------------------------
 # Make plot comparing ratio and model estimates for all species:
+
+# Replace Xiphioidea by Istiophoridae (delete this later)
+ratio_df = ratio_df %>% mutate(sp_name = if_else(sp_name == 'Xiphioidea', 'Istiophoridae', sp_name))
+model_df = model_df %>% mutate(sp_name = if_else(sp_name == 'Xiphioidea', 'Istiophoridae', sp_name))
+
+# Make plot:
 p1 = ggplot(ratio_df, aes(x = year, y = est)) +
   geom_line() +
   geom_point() +
@@ -31,6 +37,26 @@ p1 = ggplot(ratio_df, aes(x = year, y = est)) +
   labs(x = 'Year', y = 'Estimated bycatch (tons)')
 ggsave(file.path(plot_folder, 'compare_estimates.png'), width = img_width*1.5, plot = p1,
        height = 180, units = 'mm', dpi = img_res)
+
+# -------------------------------------------------------------------------
+# Make plot only for billfishes:
+
+# Replace Xiphioidea by Istiophoridae (delete this later)
+ratio1_df = ratio_df %>% filter(sp_name %in% c('Istiophoridae', 'I. albicans', 'X. gladius', 'M. nigricans'))
+model1_df = model_df %>% filter(sp_name %in% c('Istiophoridae', 'I. albicans', 'X. gladius', 'M. nigricans'))
+
+# Make plot:
+p1 = ggplot(ratio1_df, aes(x = year, y = est)) +
+  geom_line() +
+  geom_point() +
+  geom_pointrange(data = model1_df, aes(x = year, y = est,
+                                       ymin = lwr, ymax = upr),
+                  color = 'red', size = 0.25) +
+  scale_x_continuous(breaks = seq(from = 2014, to = 2022, by = 4)) +
+  facet_wrap(~ sp_name, scales = 'free_y') +
+  labs(x = 'Year', y = 'Estimated bycatch (tons)')
+ggsave(file.path(plot_folder, 'compare_estimates_billfishes.png'), width = img_width, plot = p1,
+       height = 130, units = 'mm', dpi = img_res)
 
 
 # -------------------------------------------------------------------------
@@ -71,6 +97,9 @@ plot_data = plot_data %>% mutate(estimate = if_else(family == this_family & mode
 this_family = 'Tweedie'
 these_sp = sp_data %>% filter(family == this_family) %>% pull(model)
 plot_data = plot_data %>% mutate(estimate = if_else(family == this_family & model %in% these_sp & is.na(estimate), 0, estimate))
+
+# Replace Xiphioidea by Istiophoridae (delete this later)
+plot_data = plot_data %>% mutate(model = if_else(model == 'Xiphioidea', 'Istiophoridae', model))
 
 p2 = ggplot(data = plot_data, aes(x = term, y = model, fill = estimate)) +
   geom_tile(color = NA, na.rm=TRUE) +
