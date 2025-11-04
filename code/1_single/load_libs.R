@@ -19,20 +19,26 @@ library(car)
 library(future)
 library(tidyr)
 library(ggh4x)
+library(foreach)
+library(snowfall)
 library(scales)
+library(here)
 source('code/parameters_for_plots.R')
 source('code/aux_functions.R')
 
 # SELECT YOUR SET TYPE HERE!:
 this_type = 'FOB' # FOB or FSC
 
+# First year to make analyses:
+str_yr = 2015
+
 # Define plot and data folder:
 # Data folder:
-data_folder = file.path("data", "1_single", this_type)
+data_folder = here(file.path("data", "1_single", this_type))
 dir.create(data_folder, showWarnings = FALSE, recursive = TRUE)
 # Plot folder:
-plot_folder = file.path("figures", "1_single", this_type)
+plot_folder = here(file.path("figures", "1_single", this_type))
 dir.create(plot_folder, showWarnings = FALSE, recursive = TRUE)
 # Model folder:
-model_folder = file.path("model", "1_single", this_type)
+model_folder = here(file.path("model", "1_single", this_type))
 dir.create(model_folder, showWarnings = FALSE, recursive = TRUE)

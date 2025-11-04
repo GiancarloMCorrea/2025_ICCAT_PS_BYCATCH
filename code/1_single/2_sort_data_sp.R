@@ -65,6 +65,14 @@ weight_data$sp_name[weight_data$sp_name == 's. turtles'] <- 'Chelonioidea'
 weight_data$sp_name[weight_data$sp_name == 'Uraspis'] <- 'Uraspis spp.' 
 unique(weight_data$sp_name)
 
+# IMPORANT:
+# Merge and exclude some sp after discussion with Jon:
+weight_data$sp_name[weight_data$sp_name %in% c('Carcharhinidae', 'C. falciformis')] <- 'Carcharhinidae' 
+weight_data$sp_name[weight_data$sp_name %in% c('Balistidae', 'C. maculata')] <- 'Balistidae' 
+weight_data$sp_name[weight_data$sp_name %in% c('Sphyraenidae', 'S. barracuda')] <- 'Sphyraenidae' 
+weight_data$sp_name[weight_data$sp_name %in% c('Carangidae', 'C. crysos')] <- 'Carangidae' 
+weight_data = weight_data %>% filter(!(sp_name %in% c('Elasmobranchii', 'Osteichthyes', 'Scombridae', 'T. alalunga')))
+
 # Combine per id set:
 weight_data_clean = weight_data %>% 
         group_by(id_set,ID,year,quarter,vessel_code,sp_name) %>%
@@ -116,8 +124,10 @@ sel_sp_data = moran_data %>% filter(!is.na(moran_pval)) %>%
   arrange(desc(n_years_spat_cor) )
 sp_quarter = weight_data_clean %>% group_by(quarter, sp_name) %>%
                 summarise(bycatch = sum(bycatch)) %>% group_by(sp_name) %>%
-                summarise(n_quarters = sum(bycatch > 0))
+                summarise(n_quarters = sum(bycatch > 0),
+                          tot_bycatch = sum(bycatch))
 sel_sp_data = left_join(sel_sp_data, sp_quarter, by = 'sp_name')
 summary(sel_sp_data) # check no NAs
 View(sel_sp_data)
+sel_sp_data = sel_sp_data %>% arrange(desc(tot_bycatch)) %>% mutate(cum_bycatch = cumsum(tot_bycatch)*100/sum(tot_bycatch))
 saveRDS(sel_sp_data, file = file.path(data_folder, 'model_cat_sp.rds'))

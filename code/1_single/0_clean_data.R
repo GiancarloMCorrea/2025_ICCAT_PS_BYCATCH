@@ -9,7 +9,7 @@ raw_data_folder = 'C:/Use/OneDrive - AZTI/Data/ICCAT/2024/EU_PS_Bycatch'
 # Read data in (observations):
 load(file.path(raw_data_folder, 'data.weka.ATL.2003_2023_MarineBeacon_enviado_GC_110225.RData'))
 # Read all sets (effort) data:
-allsets_df = read.csv(file.path(raw_data_folder, 'ATL_13a23_setsfleet.csv'))
+allsets_df = read.csv(file.path(raw_data_folder, 'ATL_13a23_setsfleet_idmarea_240925_modified.csv'), sep = ";")
 
 # Read data ---------------------------------------------------------------
 # Explore data:
@@ -38,7 +38,7 @@ my_data = my_data %>% rename(date = observation_date,
                              lon = longitude,
                              lat = latitude)
 # Filter data from 2013: (same as effort data)
-my_data = my_data %>% dplyr::filter(year >= 2013)
+my_data = my_data %>% dplyr::filter(year >= str_yr)
 
 # Explore:
 glimpse(my_data)
@@ -64,14 +64,15 @@ alt_set_type = this_type
 if(this_type == 'FOB') alt_set_type = 'FAD'
 
 # Do some IMPORTANT filtering:
+eff_data = eff_data %>% mutate(date = as.Date(fecha, format = '%d/%m/%Y'), .after = 'fecha',
+                               year = as.numeric(format(date, format = '%Y')))
 eff_data = eff_data %>% dplyr::filter(oceano == 1, # 1 = ATL
-                                      set_type == alt_set_type) # defined above
+                                      year >= str_yr,
+                                      set_type_2 == alt_set_type) # defined above
 # Rename some variables:
-eff_data = eff_data %>% dplyr::rename(year = año,
-                                      trop_catch = suma_de_YFT.BET.SKJ,
+eff_data = eff_data %>% dplyr::rename(trop_catch = target_catch,
                                       no_sets = numero_de_lances)
 # Create some columns:
-eff_data = eff_data %>% mutate(date = as.Date(fecha), .after = 'fecha')
 eff_data = eff_data %>% mutate(quarter = as.factor(ceiling(as.numeric(format(date, '%m'))/3)),
                                .after = 'date')
 
@@ -81,6 +82,8 @@ eff_data = eff_data %>% dplyr::filter(no_sets > 0)
 eff_data = eff_data %>% mutate(trop_catch = trop_catch/no_sets)
 # Repeat rows based on the number of sets:
 eff_data = eff_data %>% tidyr::uncount(no_sets)
+# Create Marea ID:
+eff_data = eff_data %>% mutate(marea_id = paste(numero_de_bateau, dbq, sep = '_'))
 
 # -------------------------------------------------------------------------
 # -------------------------------------------------------------------------

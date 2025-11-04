@@ -90,11 +90,11 @@ plot_time_predictions = function(model_est, ratio_est) {
 
 # -------------------------------------------------------------------------
 # Plot darhma residuals:
-plot_residuals = function(this_model){
+plot_residuals = function(this_model, plot_dir){
   
   sim_res = simulate(this_model, nsim = 500, type = "mle-mvn")
   check_res = sdmTMB::dharma_residuals(sim_res, this_model, return_DHARMa = TRUE)
-  png(filename = file.path(this_plot_folder, paste0('res_dharma', img_type)), 
+  png(filename = file.path(plot_dir, paste0('res_dharma', img_type)), 
       width = img_width, height = 100, units = 'mm', res = img_res)
   par(mar = c(4, 4, 1, 0.5))
   plot(check_res, title = NULL)
@@ -107,7 +107,7 @@ plot_residuals = function(this_model){
 # -------------------------------------------------------------------------
 # Plot omega:
 
-plot_omega = function(this_model){
+plot_omega = function(this_model, n_comps){
   
   tmp_df = list()
   for(j in 1:n_comps) {
@@ -129,7 +129,7 @@ plot_omega = function(this_model){
 # -------------------------------------------------------------------------
 # Plot epsilon:
 
-plot_epsilon = function(this_model){
+plot_epsilon = function(this_model, n_comps){
   
   tmp_df = list()
   save_plots = list()

@@ -194,7 +194,7 @@
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
 \hypersetup{
-  pdftitle={Impacts of the sampling coverage on bycatch estimates of the European purse seine fleet},
+  pdftitle={How Observation Coverage Shapes Bycatch Metrics in the Tropical Tuna Purse Seine Fishery},
   colorlinks=true,
   linkcolor={blue},
   filecolor={Maroon},
@@ -203,22 +203,27 @@
   pdfcreator={LaTeX via pandoc}}
 
 
-\title{Impacts of the sampling coverage on bycatch estimates of the
-European purse seine fleet}
+\title{How Observation Coverage Shapes Bycatch Metrics in the Tropical
+Tuna Purse Seine Fishery}
 
 
 \author[1]{Giancarlo M. Correa}
 \author[1]{Jon Ruiz}
-\author[2]{Miguel Herrera}
-\author[3]{Nekane Alzorriz}
+\author[2]{María Lourdes Ramos}
+\author[1]{Arnaitz Mugerza}
+\author[3]{Miguel Herrera}
+\author[4]{Nekane Alzorriz}
 
 \affil[1]{AZTI, Marine Research, Basque Research and Technology Alliance
-(BRTA), Txatxarramendi ugartea z/g, 48395 Sukarrieta (Bizkaia), Spain}
-\affil[2]{Organización Productores Asociados Grandes Atuneros
-Congeladores (OPAGAC), Cl. de Ayala, 54, 28001 Salamanca (Madrid),
+(BRTA), Txatxarramendi ugartea z/g, 48395 Sukarrieta, Bizkaia, Spain}
+\affil[2]{Centro Oceanográfico de Canarias, Instituto Español de
+Oceanografía (IEO-CSIC), C. Farola del Mar 22, 38180 San Andrés, Santa
+Cruz de Tenerife, Spain}
+\affil[3]{Organización Productores Asociados Grandes Atuneros
+Congeladores (OPAGAC-AGAC), Cl. de Ayala, 54, 28001 Salamanca, Madrid,
 Spain}
-\affil[3]{Asociación Nacional de Armadores de Buques Atuneros
-Congeladores (ANABAC), Txibitxiaga Kalea, 24, 48370 Bermeo (Bizkaia),
+\affil[4]{Asociación Nacional de Armadores de Buques Atuneros
+Congeladores (ANABAC), Txibitxiaga Kalea, 24, 48370 Bermeo, Bizkaia,
 Spain}
 
 
@@ -349,10 +354,10 @@ impacts of different levels of sampling coverage on the annual bycatch
 estimates derived from design-based and model-based estimators. Our
 hypothesis is that model-based estimators may provide more accurate
 bycatch estimates under low sampling coverage scenarios. We used data
-from the EU purse seine tuna fishery operating in the Atlantic Ocean as
-study case. We performed our analyses differentiating by set type:
-operating on free schools or floating objects, since they have different
-bycatch dynamics
+from the Spanish purse seine tuna fishery operating in the Atlantic
+Ocean as study case. We performed our analyses differentiating by set
+type: operating on free schools (FSC) or floating objects (FOB), since
+they have different bycatch dynamics
 (\citeproc{ref-peatmanEstimatingTrendsMagnitudes2023}{Peatman et al.,
 2023}). Our simulation experiment may be extended to other fisheries
 with fine-scale bycatch information and support the implementation of
@@ -360,10 +365,79 @@ sampling programmes across tuna RFMOs.
 
 \section{Methods}\label{methods}
 
-We use geostatistical generalized linear mixed models (GLMMs), which
-specify a geostatistical model to estimate a smoothed surface
-representing spatial variation in the studied variable (e.g., observed
-bycatch per unit of effort).
+In the following sections, we describe the data used in our analyses,
+the design and model-based estimators, and the simulation framework.
+
+\subsection{Data}\label{data}
+
+We used two data sources in our study: observers and effort data.
+
+\textbf{Observers data}: cover the activity of Spanish purse seiners
+sourced from different public scientific programmes, notably the Data
+Collection Framework, as well as the activity of vessels from different
+nations registered with OPAGAC-AGAC under flag states, coastal states or
+the Code of Good Practices observer programme in the tropical Atlantic
+Ocean between the 2015 and 2023. The observer programmes referred to
+above collect various types of information, including details on fishing
+activities, such as the location of fishing sets, the type of set or the
+fishing mode (FSC or FOB); the amount of target catch and bycatch that
+is retained and discarded by species, and the condition at release of
+the fish that are discarded. Observers identify specimens at the lowest
+possible taxonomic level, which is generally the species level.
+
+\textbf{Effort data}: describe
+
+\subsection{Species composition
+standardization}\label{species-composition-standardization}
+
+Describe
+
+\subsection{Model fitting}\label{model-fitting}
+
+We use the \emph{sdmTMB} geostatistical spatiotemporal model
+(\citeproc{ref-Anderson2024}{Anderson et al., 2024}) to fit
+taxon-specific bycatch per set (in weight) in the observers data.
+Geostatistical spatiotemporal models have become widely used in
+fisheries over the last decade (\citeproc{ref-Anderson2024}{Anderson et
+al., 2024}; \citeproc{ref-thorsonGuidanceDecisionsUsing2019}{Thorson,
+2019}), and are used when georeferenced data (e.g.~each has a
+corresponding latitude and longitude) with an underlying spatial process
+is available. \emph{sdmTMB} is written in Template Model Builder (TMB,
+Kristensen et al.
+(\citeproc{ref-kristensenTMBAutomaticDifferentiation2016}{2016})) and R
+(\citeproc{ref-rcoreteamLanguageEnvironmentStatistical2025}{Team, 2025})
+for a friendly user interface, and can be viewed as an extension of
+generalized linear mixed models (GLMMs), but with additional spatial and
+spatiotemporal components, which are approximated as random effects.
+
+Mathematically, the model structure can be expressed as:
+
+\[u_{s=1:S,t}=f^{-1}(Xb+\omega+\epsilon_t)\]
+
+where \(\u\) represents the bycatch predictions at locations \(s=1:S\)
+for a given year \(t\), \(f^{-1}()\) is the inverse link function, \(X\)
+represents the design matrix of fixed effects, \(b\) is the vector of
+estimated parameters, \(\omega\) are the estimated latent spatial
+effects, and \(\epsilon_t\) represents year-to-year latent
+spatiotemporal effects. \(\omega\) represents a spatial intercept that
+is constant with time while \(\epsilon_t\) represents spatial deviations
+over time, and both are modelled as Gaussian random fields (GRFs):
+
+\[\omega \sim MVN(0,\Sigma_\omega)\]
+\[\epsilon \sim MVN(0,\Sigma_\epsilon)\]
+
+where \(MVN\) is the multivariate normal distribution, and the
+covariance matrix \(\Sigma\) is modelled with Matérn covariance
+(\citeproc{ref-lindgrenExplicitLinkGaussian2011}{Lindgren et al., 2011};
+\citeproc{ref-maternSpatialVariation1986}{Matérn, 1986}), which defines
+the rate at which spatial covariance decays with distance.
+
+We used the Tweedie distribution \(Tweedie(\mu, \phi^2,p)\), where
+\(1<p<2\), and a log link function
+(\citeproc{ref-tweedieIndexWhichDistinguishes1984}{Tweedie, 1984}). For
+fixed effects, we incorporated the year and quarter effects as factors,
+and the target tuna catch (the sum of skipjack, yellowfin, and bigeye
+tunas) as a continuous covariate.
 
 \section{References}\label{references}
 
@@ -381,6 +455,13 @@ Amandè, M.J., Chassot, E., Chavance, P., Murua, H., De Molina, A.D.,
 Bez, N., 2012. Precision in bycatch estimates: The case of tuna
 purse-seine fisheries in the {Indian Ocean}. ICES Journal of Marine
 Science 69, 1501--1510. \url{https://doi.org/10.1093/icesjms/fss106}
+
+\bibitem[\citeproctext]{ref-Anderson2024}
+Anderson, S.C., Ward, E.J., English, P.A., Barnett, L.A.K., Thorson,
+J.T., 2024. {sdmTMB}: {An R} package for fast, flexible, and
+user-friendly generalized linear mixed effects models with spatial and
+spatiotemporal random fields. bioRxiv : the preprint server for biology.
+\url{https://doi.org/10.1101/2022.03.24.485545}
 
 \bibitem[\citeproctext]{ref-cochranSamplingTechniques1977}
 Cochran, W.G., 1977. Sampling {Techniques}, 3rd ed. John Wiley \& Sons,
@@ -438,11 +519,27 @@ Hall, M., Gilman, E., Minami, H., Mituhasi, T., Carruthers, E., 2017.
 Mitigating bycatch in tuna fisheries. Reviews in Fish Biology and
 Fisheries 27, 881--908. \url{https://doi.org/10.1007/s11160-017-9478-x}
 
+\bibitem[\citeproctext]{ref-kristensenTMBAutomaticDifferentiation2016}
+Kristensen, K., Nielsen, A., Berg, C.W., Skaug, H., Bell, B.M., 2016.
+{TMB}: {Automatic Differentiation} and {Laplace Approximation}. Journal
+of Statistical Software 70. \url{https://doi.org/10.18637/jss.v070.i05}
+
+\bibitem[\citeproctext]{ref-lindgrenExplicitLinkGaussian2011}
+Lindgren, F., Rue, H., Lindström, J., 2011. An {Explicit Link} between
+{Gaussian Fields} and {Gaussian Markov Random Fields}: {The Stochastic
+Partial Differential Equation Approach}. Journal of the Royal
+Statistical Society Series B: Statistical Methodology 73, 423--498.
+\url{https://doi.org/10.1111/j.1467-9868.2011.00777.x}
+
 \bibitem[\citeproctext]{ref-liuPreliminaryEstimatesBlue2008}
 Liu, K.-M., Tsai, W.-P., Joung, S.-J., 2008. Preliminary estimates of
 blue and mako sharks bycatch and cpue of {Taiwanese} longline fishery in
 the {Atlantic Ocean} (No. SCRS/2008/153). ICCAT (International
 Commission for the Conservation of Atlantic Tunas), Madrid, Spain.
+
+\bibitem[\citeproctext]{ref-maternSpatialVariation1986}
+Matérn, B., 1986. Spatial {Variation}, 2nd ed. Springer-Verlag, New
+York, NY.
 
 \bibitem[\citeproctext]{ref-ortizAlternativeErrorDistribution2004}
 Ortiz, M., Arocha, F., 2004. Alternative error distribution models for
@@ -463,6 +560,11 @@ Stock, B.C., Ward, E.J., Thorson, J.T., Jannot, J.E., Semmens, B.X.,
 2019. The utility of spatial model-based estimators of unobserved
 bycatch. ICES Journal of Marine Science 76, 255--267.
 \url{https://doi.org/10.1093/icesjms/fsy153}
+
+\bibitem[\citeproctext]{ref-rcoreteamLanguageEnvironmentStatistical2025}
+Team, R.C., 2025. \href{https://www.R-project.org/}{R: {A Language} and
+{Environment} for {Statistical Computing}}. R Foundation for Statistical
+Computing, Vienna, Austria.
 
 \bibitem[\citeproctext]{ref-thorsonGuidanceDecisionsUsing2019}
 Thorson, J.T., 2019. Guidance for decisions using the {Vector
@@ -487,6 +589,13 @@ Journal of Marine Science 72, 1297--1310.
 Thorson, J.T., Ward, E.J., 2013. Accounting for space--time interactions
 in index standardization models. Fisheries Research 147, 426--433.
 \url{https://doi.org/10.1016/j.fishres.2013.03.012}
+
+\bibitem[\citeproctext]{ref-tweedieIndexWhichDistinguishes1984}
+Tweedie, M.C.K., 1984. An {Index Which Distinguishes} between {Some
+Important Exponential Families}, in: Statistics: {Applications} and {New
+Directions}: {Proceedings} of the {Indian Statistical Institute Golden
+Jubilee International Conference}. Indian Statistical Institute,
+Calcutta, Calcutta, pp. 579--604.
 
 \bibitem[\citeproctext]{ref-yanSpatiotemporalModelingBycatch2022}
 Yan, Y., Cantoni, E., Field, C., Treble, M., Flemming, J.M., 2022.

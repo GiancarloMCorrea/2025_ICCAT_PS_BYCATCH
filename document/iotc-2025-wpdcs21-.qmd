@@ -1,5 +1,5 @@
 ---
-title: "Impacts of the sampling coverage on bycatch estimates of the European purse seine fleet"
+title: "How Observation Coverage Shapes Bycatch Metrics in the Tropical Tuna Purse Seine Fishery"
 authors: 
   - name: Giancarlo M. Correa
     affil-id: 1
@@ -7,17 +7,23 @@ authors:
     corresponding: true
   - name: Jon Ruiz
     affil-id: 1
-  - name: Miguel Herrera
+  - name: María Lourdes Ramos
     affil-id: 2
-  - name: Nekane Alzorriz
+  - name: Arnaitz Mugerza
+    affil-id: 1
+  - name: Miguel Herrera
     affil-id: 3
+  - name: Nekane Alzorriz
+    affil-id: 4
 affiliations:
   - id: 1
-    name: AZTI, Marine Research, Basque Research and Technology Alliance (BRTA), Txatxarramendi ugartea z/g, 48395 Sukarrieta (Bizkaia), Spain
+    name: AZTI, Marine Research, Basque Research and Technology Alliance (BRTA), Txatxarramendi ugartea z/g, 48395 Sukarrieta, Bizkaia, Spain
   - id: 2
-    name: Organización Productores Asociados Grandes Atuneros Congeladores (OPAGAC), Cl. de Ayala, 54, 28001 Salamanca (Madrid), Spain
+    name: Centro Oceanográfico de Canarias, Instituto Español de Oceanografía (IEO-CSIC), C. Farola del Mar 22, 38180 San Andrés, Santa Cruz de Tenerife, Spain
   - id: 3
-    name: Asociación Nacional de Armadores de Buques Atuneros Congeladores (ANABAC), Txibitxiaga Kalea, 24, 48370 Bermeo (Bizkaia), Spain
+    name: Organización Productores Asociados Grandes Atuneros Congeladores (OPAGAC-AGAC), Cl. de Ayala, 54, 28001 Salamanca, Madrid, Spain
+  - id: 4
+    name: Asociación Nacional de Armadores de Buques Atuneros Congeladores (ANABAC), Txibitxiaga Kalea, 24, 48370 Bermeo, Bizkaia, Spain
 link-citations: true
 csl: ../elsevier-harvard.csl
 format:
@@ -94,11 +100,42 @@ Despite their widespread use, there are a number of potential issues in applying
 
 Spatiotemporal models are increasingly adopted in multiple fisheries applications [@grussSupportingStockAssessment2023; @thorsonGuidanceDecisionsUsing2019; @ducharme-barthImpactsFisheriesdependentSpatial2022], including undertaking bycatch analyses (e.g., @yanSpatiotemporalModelingBycatch2022). These models can provide detailed predictions for any location based on spatial autocorrelation in the observations. However, they are also complicated and require more data to generate robust predictions, which make it unsuitable for data-poor fisheries. In the majority of cases, spatially explicit model-based estimators have increased precision relative to simpler estimators that assign observations to strata [@thorsonGeostatisticalDeltageneralizedLinear2015; @thorsonAccountingSpaceTime2013]. There are a number of additional advantages of spatial models, including the ability to better quantify shifts in distribution [@thorsonModelbasedInferenceEstimating2016] and improved ability to identify fine-scale hotspots of high bycatch [@cosandey-godinApplyingBayesianSpatiotemporal2015]. For tuna fisheries, spatiotemporal models like generalized additive models (GAMs) have recently been used to obtain annual estimates of the most important bycatch species [@dumontModelingBycatchAbundance2024; @peatmanEstimatingTrendsMagnitudes2023].
 
-In this study, we implemented a simulation experiment to evaluate the impacts of different levels of sampling coverage on the annual bycatch estimates derived from design-based and model-based estimators. Our hypothesis is that model-based estimators may provide more accurate bycatch estimates under low sampling coverage scenarios. We used data from the EU purse seine tuna fishery operating in the Atlantic Ocean as study case. We performed our analyses differentiating by set type: operating on free schools or floating objects, since they have different bycatch dynamics [@peatmanEstimatingTrendsMagnitudes2023]. Our simulation experiment may be extended to other fisheries with fine-scale bycatch information and support the implementation of sampling programmes across tuna RFMOs. 
+In this study, we implemented a simulation experiment to evaluate the impacts of different levels of sampling coverage on the annual bycatch estimates derived from design-based and model-based estimators. Our hypothesis is that model-based estimators may provide more accurate bycatch estimates under low sampling coverage scenarios. We used data from the Spanish purse seine tuna fishery operating in the Atlantic Ocean as study case. We performed our analyses differentiating by set type: operating on free schools (FSC) or floating objects (FOB), since they have different bycatch dynamics [@peatmanEstimatingTrendsMagnitudes2023]. Our simulation experiment may be extended to other fisheries with fine-scale bycatch information and support the implementation of sampling programmes across tuna RFMOs. 
 
 # Methods
 
-We use geostatistical generalized linear mixed models (GLMMs), which specify a geostatistical model to estimate a smoothed surface representing spatial variation in the studied variable (e.g., observed bycatch per unit of effort). 
+In the following sections, we describe the data used in our analyses, the design and model-based estimators, and the simulation framework.
+
+## Data
+
+We used two data sources in our study: observers and effort data. 
+
+**Observers data**: cover the activity of Spanish purse seiners sourced from different public scientific programmes, notably the Data Collection Framework, as well as the activity of vessels from different nations registered with OPAGAC-AGAC under flag states, coastal states or the Code of Good Practices observer programme in the tropical Atlantic Ocean between the 2015 and 2023. The observer programmes referred to above collect various types of information, including details on fishing activities, such as the location of fishing sets, the type of set or the fishing mode (FSC or FOB); the amount of target catch and bycatch that is retained and discarded by species, and the condition at release of the fish that are discarded. Observers identify specimens at the lowest possible taxonomic level, which is generally the species level.
+
+**Effort data**: describe
+
+## Species composition standardization
+
+Describe
+
+## Model fitting
+
+We use the *sdmTMB* geostatistical spatiotemporal model [@Anderson2024] to fit taxon-specific bycatch per set (in weight) in the observers data. Geostatistical spatiotemporal models have become widely used in fisheries over the last decade [@Anderson2024; @thorsonGuidanceDecisionsUsing2019], and are used when georeferenced data (e.g. each has a corresponding latitude and longitude) with an underlying spatial process is available. *sdmTMB* is written in Template Model Builder (TMB, @kristensenTMBAutomaticDifferentiation2016) and R [@rcoreteamLanguageEnvironmentStatistical2025] for a friendly user interface, and can be viewed as an extension of generalized linear mixed models (GLMMs), but with additional spatial and spatiotemporal components, which are approximated as random effects.
+
+Mathematically, the model structure can be expressed as:
+
+$$u_{s=1:S,t}=f^{-1}(Xb+\omega+\epsilon_t)$$
+
+where $\u$ represents the bycatch predictions at locations $s=1:S$ for a given year $t$, $f^{-1}()$ is the inverse link function, $X$ represents the design matrix of fixed effects, $b$ is the vector of estimated parameters, $\omega$ are the estimated latent spatial effects, and $\epsilon_t$ represents year-to-year latent spatiotemporal effects. $\omega$ represents a spatial intercept that is constant with time while $\epsilon_t$ represents spatial deviations over time, and both are modelled as Gaussian random fields (GRFs):
+
+$$\omega \sim MVN(0,\Sigma_\omega)$$
+$$\epsilon \sim MVN(0,\Sigma_\epsilon)$$
+
+where $MVN$ is the multivariate normal distribution, and the covariance matrix $\Sigma$ is modelled with Matérn covariance [@lindgrenExplicitLinkGaussian2011; @maternSpatialVariation1986], which defines the rate at which spatial covariance decays with distance.
+
+We used the Tweedie distribution $Tweedie(\mu, \phi^2,p)$, where $1<p<2$, and a log link function [@tweedieIndexWhichDistinguishes1984]. For fixed effects, we incorporated the year and quarter effects as factors, and the target tuna catch (the sum of skipjack, yellowfin, and bigeye tunas) as a continuous covariate.
+
+## Simulation
 
 
 # References

@@ -33,6 +33,19 @@
   file = {C:\Users\gmoron\Zotero\storage\9SXZRJSV\Amandè et al. - 2012 - Precision in bycatch estimates the case of tuna p.pdf}
 }
 
+@article{Anderson2024,
+  title = {{{sdmTMB}}: {{An R}} Package for Fast, Flexible, and User-Friendly Generalized Linear Mixed Effects Models with Spatial and Spatiotemporal Random Fields},
+  author = {Anderson, Sean C. and Ward, Eric J. and English, Philina A. and Barnett, Lewis A. K. and Thorson, James T.},
+  year = {2024},
+  journal = {bioRxiv : the preprint server for biology},
+  eprint = {https://www.biorxiv.org/content/early/2024/02/05/2022.03.24.485545.full.pdf},
+  publisher = {Cold Spring Harbor Laboratory},
+  doi = {10.1101/2022.03.24.485545},
+  url = {https://www.biorxiv.org/content/early/2024/02/05/2022.03.24.485545},
+  abstract = {Geostatistical spatial or spatiotemporal data are common across scientific fields. However, appropriate models to analyse these data, such as generalised linear mixed effects models (GLMMs) with Gaussian Markov random fields (GMRFs), are computationally intensive and challenging for many users to implement. Here, we introduce the R package sdmTMB, which extends the flexible interface familiar to users of lme4, glmmTMB, and mgcv to include spatial and spatiotemporal latent GMRFs using an SPDE-(stochastic partial differential equation) based approach. SPDE matrices are constructed with fmesher and estimation is conducted via maximum marginal likelihood with TMB or via Bayesian inference with tmbstan and rstan. We describe the model and explore case studies that illustrate sdmTMB's flexibility in implementing penalised smoothers, non-stationary processes (time-varying and spatially varying coefficients), hurdle models, cross-validation and anisotropy (directionally dependent spatial correlation). Finally, we compare the functionality, speed, and interfaces of related software, demonstrating that sdmTMB can be an order of magnitude faster than R-INLA. We hope sdmTMB's accessible interface will help open this useful class of models to a wider field of geostatistical analysts.Competing Interest StatementThe authors have declared no competing interest.},
+  elocation-id = {2022.03.24.485545}
+}
+
 @book{cochranSamplingTechniques1977,
   title = {Sampling {{Techniques}}},
   author = {Cochran, W.G.},
@@ -180,6 +193,42 @@
   langid = {english}
 }
 
+@article{kristensenTMBAutomaticDifferentiation2016,
+  title = {{{TMB}}: {{Automatic Differentiation}} and {{Laplace Approximation}}},
+  shorttitle = {{{{\textbf{TMB}}}}},
+  author = {Kristensen, Kasper and Nielsen, Anders and Berg, Casper W. and Skaug, Hans and Bell, Bradley M.},
+  year = {2016},
+  journal = {Journal of Statistical Software},
+  volume = {70},
+  number = {5},
+  issn = {1548-7660},
+  doi = {10.18637/jss.v070.i05},
+  url = {http://www.jstatsoft.org/v70/i05/},
+  urldate = {2022-10-25},
+  abstract = {TMB is an open source R package that enables quick implementation of complex nonlinear random effects (latent variable) models in a manner similar to the established AD Model Builder package (ADMB, http://admb-project.org/; Fournier et al. 2011). In addition, it offers easy access to parallel computations. The user defines the joint likelihood for the data and the random effects as a C++ template function, while all the other operations are done in R; e.g., reading in the data. The package evaluates and maximizes the Laplace approximation of the marginal likelihood where the random effects are automatically integrated out. This approximation, and its derivatives, are obtained using automatic differentiation (up to order three) of the joint likelihood. The computations are designed to be fast for problems with many random effects ({$\approx$} 106) and parameters ({$\approx$} 103). Computation times using ADMB and TMB are compared on a suite of examples ranging from simple models to large spatial models where the random effects are a Gaussian random field. Speedups ranging from 1.5 to about 100 are obtained with increasing gains for large problems. The package and examples are available at http://tmb-project.org/.},
+  langid = {english},
+  file = {C:\Users\moroncog\Documents\Postdoc_UW\references\Kristiansen_2016.pdf}
+}
+
+@article{lindgrenExplicitLinkGaussian2011,
+  title = {An {{Explicit Link}} between {{Gaussian Fields}} and {{Gaussian Markov Random Fields}}: {{The Stochastic Partial Differential Equation Approach}}},
+  shorttitle = {An {{Explicit Link}} between {{Gaussian Fields}} and {{Gaussian Markov Random Fields}}},
+  author = {Lindgren, Finn and Rue, H{\aa}vard and Lindstr{\"o}m, Johan},
+  year = {2011},
+  month = sep,
+  journal = {Journal of the Royal Statistical Society Series B: Statistical Methodology},
+  volume = {73},
+  number = {4},
+  pages = {423--498},
+  issn = {1369-7412, 1467-9868},
+  doi = {10.1111/j.1467-9868.2011.00777.x},
+  url = {https://academic.oup.com/jrsssb/article/73/4/423/7034732},
+  urldate = {2025-11-04},
+  abstract = {Summary             Continuously indexed Gaussian fields (GFs) are the most important ingredient in spatial statistical modelling and geostatistics. The specification through the covariance function gives an intuitive interpretation of the field properties. On the computational side, GFs are hampered with the big n problem, since the cost of factorizing dense matrices is cubic in the dimension. Although computational power today is at an all time high, this fact seems still to be a computational bottleneck in many applications. Along with GFs, there is the class of Gaussian Markov random fields (GMRFs) which are discretely indexed. The Markov property makes the precision matrix involved sparse, which enables the use of numerical algorithms for sparse matrices, that for fields in {$\mathbb{R}$}2 only use the square root of the time required by general algorithms. The specification of a GMRF is through its full conditional distributions but its marginal properties are not transparent in such a parameterization. We show that, using an approximate stochastic weak solution to (linear) stochastic partial differential equations, we can, for some GFs in the Mat{\'e}rn class, provide an explicit link, for any triangulation of {$\mathbb{R}$}d, between GFs and GMRFs, formulated as a basis function representation. The consequence is that we can take the best from the two worlds and do the modelling by using GFs but do the computations by using GMRFs. Perhaps more importantly, our approach generalizes to other covariance functions generated by SPDEs, including oscillating and non-stationary GFs, as well as GFs on manifolds. We illustrate our approach by analysing global temperature data with a non-stationary model defined on a sphere.},
+  copyright = {https://academic.oup.com/journals/pages/open\_access/funder\_policies/chorus/standard\_publication\_model},
+  langid = {english}
+}
+
 @techreport{liuPreliminaryEstimatesBlue2008,
   title = {Preliminary Estimates of Blue and Mako Sharks Bycatch and Cpue of {{Taiwanese}} Longline Fishery in the {{Atlantic Ocean}}},
   author = {Liu, Kwang-Ming and Tsai, Wen-Pei and Joung, Shoou-Jeng},
@@ -187,6 +236,15 @@
   number = {SCRS/2008/153},
   address = {Madrid, Spain},
   institution = {ICCAT (International Commission for the Conservation of Atlantic Tunas)}
+}
+
+@book{maternSpatialVariation1986,
+  title = {Spatial {{Variation}}},
+  author = {Mat{\'e}rn, B.},
+  year = {1986},
+  edition = {2nd},
+  publisher = {Springer-Verlag},
+  address = {New York, NY}
 }
 
 @article{ortizAlternativeErrorDistribution2004,
@@ -223,6 +281,15 @@
   abstract = {Abstract             Minimising the unintended capture of fish, marine mammals, reptiles, seabirds and other marine organisms is an important component of responsible fisheries management and for stabilising declines and rebuilding populations of threatened species. The analyses presented were designed to establish the first quantitative baseline of historical catches, catch rates and species composition for the dominant tuna fisheries operating in the western and central Pacific, the world's largest in terms of tuna catch. Using records from 612,148 fishing events collected by independent `at sea' observers, estimates for finfish, billfish, elasmobranchs, marine mammals and sea turtles show that the composition and magnitude of catches varied considerably by fishery type and practice for the period 2003--2019. Simulations indicated that precision in longline estimates would be improved by monitoring a proportion of fishing sets from all fishing trips rather than full coverage from a proportion of all fishing trips. While attributing reasons for temporal trends in estimated bycatch was difficult due to the confounding impacts of changing abundances and fishing practices, the trends identified the nature of potential relationships for species that are not accurately quantified, or not covered, by fishing vessel logbooks. The trends in catch estimates, and the catch rate models, have utility in identifying species which may require targeted additional analyses and management interventions, including species of conservation interest (either due to their threatened status or vulnerability to fishing) such as elasmobranchs and sea turtles. Moreover, the estimates should support future evaluations of the impact of these industrial-scale fisheries on bycatch species.},
   langid = {english},
   file = {C:\Users\gmoron\Zotero\storage\K4EW57SG\Peatman et al. - 2023 - Estimating trends and magnitudes of bycatch in the.pdf}
+}
+
+@techreport{rcoreteamLanguageEnvironmentStatistical2025,
+  title = {R: {{A Language}} and {{Environment}} for {{Statistical Computing}}},
+  author = {R Core Team},
+  year = {2025},
+  address = {Vienna, Austria},
+  institution = {R Foundation for Statistical Computing},
+  url = {https://www.R-project.org/}
 }
 
 @article{stockUtilitySpatialModelbased2019,
@@ -312,6 +379,16 @@
   copyright = {http://onlinelibrary.wiley.com/termsAndConditions\#vor},
   langid = {english},
   file = {C:\Users\gmoron\Zotero\storage\P62F88N8\Thorson et al. - 2016 - Model‐based inference for estimating shifts in spe.pdf}
+}
+
+@incollection{tweedieIndexWhichDistinguishes1984,
+  title = {An {{Index Which Distinguishes}} between {{Some Important Exponential Families}}},
+  booktitle = {Statistics: {{Applications}} and {{New Directions}}: {{Proceedings}} of the {{Indian Statistical Institute Golden Jubilee International Conference}}},
+  author = {Tweedie, M.C.K.},
+  year = {1984},
+  pages = {579--604},
+  publisher = {Indian Statistical Institute, Calcutta},
+  address = {Calcutta}
 }
 
 @article{yanSpatiotemporalModelingBycatch2022,
