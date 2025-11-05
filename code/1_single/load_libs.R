@@ -32,6 +32,9 @@ this_type = 'FOB' # FOB or FSC
 # First year to make analyses:
 str_yr = 2015
 
+# Goal of study: estimation or sample-coverage
+this_goal = 'sample-coverage'
+
 # Define plot and data folder:
 # Data folder:
 data_folder = here(file.path("data", "1_single", this_type))

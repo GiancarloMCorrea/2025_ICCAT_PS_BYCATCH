@@ -34,7 +34,7 @@ calculate_area_on_land = function(dat) {
 
 # -------------------------------------------------------------------------
 
-plot_predictions = function(plot_data, nCol = 4) {
+plot_predictions = function(plot_data, MyGrid, nCol = 4) {
   
   # Plot CPUE by grid and year:
   plot_data = plot_data %>% group_by(year, ID) %>% summarise(bycatch_est = sum(bycatch_est), .groups = 'drop') 
@@ -57,30 +57,28 @@ plot_predictions = function(plot_data, nCol = 4) {
 }
 
 # -------------------------------------------------------------------------
-plot_time_predictions = function(model_est, ratio_est) {
+plot_time_predictions = function(model_est, ratio_est, this_sp) {
   
-  colvals = RColorBrewer::brewer.pal(n = 3, name = 'Set1')
+  colvals = RColorBrewer::brewer.pal(n = 2, name = 'Set1')
   # Legend for plot:
   annotations <- data.frame(
-    xpos = c(Inf, Inf, Inf),
-    ypos =  c(Inf, Inf, Inf),
-    annotateText = c("Production", "Number of sets", "sdmTMB"),
-    hjustvar = c(1, 1, 1) ,
-    vjustvar = c(1.5, 3.5, 5.5))
+    xpos = c(Inf, Inf),
+    ypos =  c(Inf, Inf),
+    annotateText = c("Production", "sdmTMB"),
+    hjustvar = c(1, 1) ,
+    vjustvar = c(1.5, 3.5))
   
   p1 = ggplot(data = ratio_est) +
     geom_point(aes(x = year, y = est_prod), color = colvals[1]) +
     geom_line(aes(x = year, y = est_prod), color = colvals[1]) +
-    geom_point(aes(x = year, y = est_sets), color = colvals[2]) +
-    geom_line(aes(x = year, y = est_sets), color = colvals[2]) +
     geom_pointrange(data = model_est, aes(x = year, y = est,
                                           ymin = lwr, ymax = upr),
-                    color = colvals[3], size = 0.25) +
+                    color = colvals[2], size = 0.25) +
     scale_x_continuous(breaks = seq(from = 2014, to = 2022, by = 4)) +
+    theme_bw() +
     labs(x = 'Year', y = 'Estimated bycatch (tons)') +
     geom_text(data=annotations[1,],aes(x=xpos,y=ypos,hjust=hjustvar, vjust=vjustvar,label=annotateText), color = colvals[1]) +
     geom_text(data=annotations[2,],aes(x=xpos,y=ypos,hjust=hjustvar, vjust=vjustvar,label=annotateText), color = colvals[2]) +
-    geom_text(data=annotations[3,],aes(x=xpos,y=ypos,hjust=hjustvar, vjust=vjustvar,label=annotateText), color = colvals[3]) +
     theme(legend.position = 'none') + ggtitle(this_sp) 
   
   return(p1)
@@ -100,6 +98,12 @@ plot_residuals = function(this_model, plot_dir){
   plot(check_res, title = NULL)
   dev.off()
   
+  test_list = list()
+  test_list$unif_test = DHARMa::testUniformity(check_res, plot = FALSE)$p.value
+  test_list$outl_test = DHARMa::testOutliers(check_res, plot = FALSE)$p.value
+  test_list$disp_test = DHARMa::testDispersion(check_res, plot = FALSE)$p.value
+  return(test_list)
+  
 }
 
 
@@ -118,7 +122,7 @@ plot_omega = function(this_model, n_comps){
   }
   plot_dat = bind_rows(tmp_df)
   plot_dat = plot_dat %>% st_as_sf(coords = c("Lon", "Lat"), crs = 4326, remove = FALSE)
-  p1 = ggplot(plot_dat) + geom_sf(aes(color = omega), size = 1.5) + scale_colour_gradient2() + labs(color = 'Omega')
+  p1 = ggplot(plot_dat) + geom_sf(aes(color = omega), size = 1.5) + scale_colour_gradient2() + labs(color = 'Omega') + theme_bw()
   p1 = add_sf_map(p1)
   p1 = p1 + facet_wrap(~comp)
   return(p1)
@@ -143,7 +147,7 @@ plot_epsilon = function(this_model, n_comps){
     }
     plot_dat = bind_rows(tmp_df)
     plot_dat = plot_dat %>% st_as_sf(coords = c("Lon", "Lat"), crs = 4326, remove = FALSE)
-    p1 = ggplot(plot_dat) + geom_sf(aes(color = epsilon), size = 1) + scale_colour_gradient2() + labs(color = 'Epsilon')
+    p1 = ggplot(plot_dat) + geom_sf(aes(color = epsilon), size = 1) + scale_colour_gradient2() + labs(color = 'Epsilon') + theme_bw()
     p1 = add_sf_map(p1)
     p1 = p1 + facet_wrap(~ year)
     save_plots[[k]] = p1
@@ -381,6 +385,4 @@ calculate_ratio_bycatch = function(obs_df, eff_df, type = 'production') {
   return(estimateData)
   
 }
-
-
 

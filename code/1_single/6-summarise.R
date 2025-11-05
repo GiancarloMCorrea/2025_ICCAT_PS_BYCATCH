@@ -21,10 +21,6 @@ model_df = bind_rows(model_df)
 # -------------------------------------------------------------------------
 # Make plot comparing ratio and model estimates for all species:
 
-# Replace Xiphioidea by Istiophoridae (delete this later)
-ratio_df = ratio_df %>% mutate(sp_name = if_else(sp_name == 'Xiphioidea', 'Istiophoridae', sp_name))
-model_df = model_df %>% mutate(sp_name = if_else(sp_name == 'Xiphioidea', 'Istiophoridae', sp_name))
-
 # Make plot:
 p1 = ggplot(ratio_df, aes(x = year, y = est)) +
   geom_line() +
@@ -41,7 +37,6 @@ ggsave(file.path(plot_folder, 'compare_estimates.png'), width = img_width*1.5, p
 # -------------------------------------------------------------------------
 # Make plot only for billfishes:
 
-# Replace Xiphioidea by Istiophoridae (delete this later)
 ratio1_df = ratio_df %>% filter(sp_name %in% c('Istiophoridae', 'I. albicans', 'X. gladius', 'M. nigricans'))
 model1_df = model_df %>% filter(sp_name %in% c('Istiophoridae', 'I. albicans', 'X. gladius', 'M. nigricans'))
 
