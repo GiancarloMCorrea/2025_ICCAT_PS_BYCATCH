@@ -10,3 +10,5 @@ document/*.pdf
 document/*.docx
 document/*.tex
 data/
+figures/1_single/
+figures/2_multi/
