@@ -27,7 +27,7 @@ source('code/parameters_for_plots.R')
 source('code/aux_functions.R')
 
 # SELECT YOUR SET TYPE HERE!:
-this_type = 'FOB' # FOB or FSC
+this_type = 'FSC' # FOB or FSC
 
 # First year to make analyses:
 str_yr = 2015

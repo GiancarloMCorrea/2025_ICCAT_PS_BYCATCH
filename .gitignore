@@ -3,8 +3,5 @@
 .RData
 .Ruserdata
 .RDataTmp
-model/1_single/FOB/**/*.RData
-model/1_single/FSC/**/*.RData
-model/2_multi/FOB/**/*.RData
-figures/
-model/3_sampsize
+model/
+data/

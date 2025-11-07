@@ -366,37 +366,47 @@ sampling programmes across tuna RFMOs.
 \section{Methods}\label{methods}
 
 In the following sections, we describe the data used in our analyses,
-the design and model-based estimators, and the simulation framework.
+the design and model-based estimators, and the simulation framework. The
+analyses described below were performed by set type independently.
 
 \subsection{Data}\label{data}
 
-We used two data sources in our study: observers and effort data.
+Our analyses use data collected by scientific observers aboard tropical
+purse seine vessels operating in the Atlantic Ocean between 2015 and
+2023 (\emph{observers data}). The dataset includes records from both the
+Spanish scientific monitoring program (EU Data Collection Framework) and
+the industry-funded Best Practices program, covering Spanish vessels and
+those under other flags affiliated with ANABAC and OPAGAC.
 
-\textbf{Observers data}: cover the activity of Spanish purse seiners
-sourced from different public scientific programmes, notably the Data
-Collection Framework, as well as the activity of vessels from different
-nations registered with OPAGAC-AGAC under flag states, coastal states or
-the Code of Good Practices observer programme in the tropical Atlantic
-Ocean between the 2015 and 2023. The observer programmes referred to
-above collect various types of information, including details on fishing
-activities, such as the location of fishing sets, the type of set or the
-fishing mode (FSC or FOB); the amount of target catch and bycatch that
-is retained and discarded by species, and the condition at release of
-the fish that are discarded. Observers identify specimens at the lowest
-possible taxonomic level, which is generally the species level.
+Regardless of the monitoring program, observers followed a standardized
+protocol. They recorded detailed information for each fishing set,
+including estimates of target tuna catch and bycatch. For larger bycatch
+species such as elasmobranchs and billfish, all individuals were
+counted. For smaller, more abundant species, estimates were often based
+on visual assessments. In addition to counts, observers conducted length
+sampling to convert numbers into biomass using species-specific
+length-weight relationships. Taxa were identified to the species level
+whenever possible, although in rare cases, only higher taxonomic groups
+(e.g., family) were recorded.
 
-\textbf{Effort data}: describe
+The \emph{effort data} used in our analyses pertain exclusively to the
+Spanish fleet for the same period and fishing ground. This information
+is sourced from the logbooks completed by the captains, who are required
+to record details of each fishing trip, including the location and date
+of every fishing operation.
 
-\subsection{Species composition
-standardization}\label{species-composition-standardization}
+This study does not present results for all taxa found in the purse
+seine fleet's bycatch. Instead, a targeted selection of species or
+groups of species was made to represent three categories: the most
+abundant taxa, the rare or less prevalent ones, and those considered
+vulnerable or of special interest. The list of these taxa are presented
+in Table XX.
 
-Describe
-
-\subsection{Model fitting}\label{model-fitting}
+\subsection{Model fitting}\label{sec-fit}
 
 We use the \emph{sdmTMB} geostatistical spatiotemporal model
 (\citeproc{ref-Anderson2024}{Anderson et al., 2024}) to fit
-taxon-specific bycatch per set (in weight) in the observers data.
+taxon-specific bycatch per set (in weight) using the observers data.
 Geostatistical spatiotemporal models have become widely used in
 fisheries over the last decade (\citeproc{ref-Anderson2024}{Anderson et
 al., 2024}; \citeproc{ref-thorsonGuidanceDecisionsUsing2019}{Thorson,
@@ -430,14 +440,134 @@ where \(MVN\) is the multivariate normal distribution, and the
 covariance matrix \(\Sigma\) is modelled with Matérn covariance
 (\citeproc{ref-lindgrenExplicitLinkGaussian2011}{Lindgren et al., 2011};
 \citeproc{ref-maternSpatialVariation1986}{Matérn, 1986}), which defines
-the rate at which spatial covariance decays with distance.
+the rate at which spatial covariance decays with distance. \emph{sdmTMB}
+approximates the GRF by relying on the Stochastic Partial Differential
+Equation (SPDE) approach using the Integrated Nested Laplace
+Approximation in \emph{R-INLA} to reduce computational costs
+(\citeproc{ref-rueApproximateBayesianInference2009}{Rue et al., 2009}).
+The first step when using the SPDE approach is to construct the mesh,
+which, in our case, was composed of triangles covering the studied area
+with a minimum allowed triangle edge length (\emph{cutoff}) of 1.5
+degrees.
+
+For some taxa, especially the less recurrent ones, the inclusion of both
+the spatial and spatiotemporal terms caused the model failed to
+converge. For those cases, we reran the model only including the spatial
+term in order to simplify the model structure.
 
 We used the Tweedie distribution \(Tweedie(\mu, \phi^2,p)\), where
 \(1<p<2\), and a log link function
-(\citeproc{ref-tweedieIndexWhichDistinguishes1984}{Tweedie, 1984}). For
-fixed effects, we incorporated the year and quarter effects as factors,
-and the target tuna catch (the sum of skipjack, yellowfin, and bigeye
-tunas) as a continuous covariate.
+(\citeproc{ref-tweedieIndexWhichDistinguishes1984}{Tweedie, 1984}). The
+Tweedie model is an extension of compound Poisson model derived from the
+stochastic process where the weight of the response variable (e.g.,
+catch data) has a gamma distribution and has an advantage of handling
+the zero-catch data in a unified way
+(\citeproc{ref-shonoApplicationTweedieDistribution2008}{Shono, 2008}).
+For fixed effects, we incorporated the year and quarter effects as
+factors, and the target tuna catch (the sum of skipjack, yellowfin, and
+bigeye tunas) as a continuous covariate.
+
+For all fitted models, we checked that the maximum gradient was smaller
+than 1e-03, the Hessian was invertible, and standard errors were
+estimated for all fixed effects and did not look unreasonably large
+(``safety checks''). We then used the \emph{DHARMa} R package
+(\citeproc{ref-hartigDHARMaResidualDiagnostics2022}{Hartig, 2022}) to
+evaluate the model residuals. Standard raw residuals are not always
+appropriate when using generalized linear models, and other types of
+residuals are commonly used instead. \emph{DHARMa} uses a
+simulation-based approach to create readily interpretable scaled
+(quantile) residuals for generalized linear mixed models. We analyzed
+two plots produced by \emph{DHARMa}: 1) the QQ plot residuals, which
+detects overall deviations from the expected distribution, and 2) the
+residual vs.~predicted plot, which detects trends in residuals along
+model predictions and simulation outliers.
+
+\subsection{Simulation}\label{sec-sim}
+
+One of the advantages of using models like \emph{sdmTMB} is that we can
+simulate new observations using a new dataset (``prediction dataset'')
+containing the same covariates used when fitting the model. In our case,
+we used the effort data as the prediction dataset and simulated new
+observations (i.e., bycatch in weight for every fishing set in the
+effort data) using the fitted models for each taxa in
+Section~\ref{sec-fit}. These simulated observations keep the statistical
+properties of the original bycatch data. We refer to the effort data
+with simulated bycatch observations as the \emph{simulated data}.
+
+We then took a subset of the simulated data with different sampling
+coverage scenarios: 5\%, 10\%, 20\%, 30\%, 40\%, 50\%, 70\%, and 90\%.
+To approximate real-case situations, we performed this subsetting
+stratified by year, and then selected the fishing trips observed under
+that sampling coverage scenario. The obtained \emph{sampled data}
+represent the observers data that would have been obtained from an
+observers program with the specified sampling coverage.
+
+Then, using the sampled data, we estimated the annual bycatch using two
+approaches: ratio and model-based estimator, which are described below.
+
+\subsubsection{Ratio estimator}\label{ratio-estimator}
+
+We used the spatially-stratified bycatch--over-target catch ratio. For a
+given taxon, the ratio (\(R_{y,a}\)) was calculated for every defined
+\(5\times 5^\circ\) grid \(a\) in the study area and year \(y\) as
+follows:
+
+\[R_{y,a} = \frac{B_{y,a}}{T_{y,a}}\]
+
+where \(BY_{y,a}\) is the total bycatch and \(TG_{y,a}\) the total
+tropical tuna catch obtained from the sampled data. In a few cases,
+there could happen that \(T_{y,a}=0\) (e.g., sets with target catch
+equal to zero or ``null sets''), so \(R_{y,a}\) could not be calculated.
+Therefore, exclusively for those cases, we assumed that \(R_{y,a}=0\).
+
+Then, assuming a linear relationship between bycatch and target catch,
+we calculated the total bycatch:
+
+\[\hat{B}_{y,a} = R_{y,a}T^\ast_{y,a}\]
+
+where \(T^\ast_{y,a}\) is the total target catch in grid \(a\) and year
+\(y\) obtained from the effort data. Especially for low sampling
+coverage scenarios, it is expected to have missing \(R_{y,a}\) values
+for some grids due to the sampled data do not cover all the grids in the
+study area. Therefore, exclusively for those grids, \(R_{y,a}\) was
+calculated using \(B_{y}/T_{y}\), where \(B_{y}\) and \(T_{y}\) are the
+total bycatch and target catch in the whole area, respectively, derived
+from the information in the sampled data.
+
+Finally, the annual bycatch estimate is calculated:
+\(\hat{B}_{y}=\sum_a \hat{B}_{y,a}\).
+
+\subsubsection{Model-based estimator}\label{model-based-estimator}
+
+We followed the same modelling framework described in
+Section~\ref{sec-fit}. Once the fitted model is obtained, we then made
+predictions using the effort data, which generated predicted bycatch
+observations for every fishing set in that dataset. Then, we summed the
+predicted bycatch values per year to estimate the annual bycatch
+\(\hat{B}_{y}\).
+
+Especially when the sampling coverage is low, we could find cases when a
+given taxon is not detected in the sampled data (i.e., bycatch equal to
+zero for all fishing sets). In those cases, the model-based estimator
+was not run and we assumed \(\hat{B}_{y}=0\) for all years. Another
+special case is when the model did not pass the safety checks (see
+Section~\ref{sec-fit}). In those cases, we were not able to produce
+bycatch estimates \(\hat{B}_{y}\) and reported the rate of model
+failure.
+
+\subsection{Performance}\label{performance}
+
+The procedure explained in Section~\ref{sec-sim} was repeated 100 times
+(``replicates'') with different seeds to produce the simulated data,
+therefore we obtained 100 annual bycatch estimates by the ratio and
+model-based estimators for each taxa \(q\). We calculated the relative
+error for every replicate \(i\):
+\(RE_{i,q,y}=(\hat{B}_{i,q,y} - B_{i,q,y})/B_{i,q,y}\), where
+\(B_{i,q,y}\) represents the true annual bycatch obtained from the
+simulated data. The width of the 95\% quantile of RE over replicates was
+used as a measure of precision and the median as a proxy of bias, and
+these metrics were used to compare the performance of the ratio and
+model-based estimators.
 
 \section{References}\label{references}
 
@@ -519,6 +649,12 @@ Hall, M., Gilman, E., Minami, H., Mituhasi, T., Carruthers, E., 2017.
 Mitigating bycatch in tuna fisheries. Reviews in Fish Biology and
 Fisheries 27, 881--908. \url{https://doi.org/10.1007/s11160-017-9478-x}
 
+\bibitem[\citeproctext]{ref-hartigDHARMaResidualDiagnostics2022}
+Hartig, F., 2022.
+\href{http://florianhartig.github.io/DHARMa/}{{DHARMa}: {Residual
+Diagnostics} for {Hierarchical} ({Multi-Level} / {Mixed}) {Regression
+Models}}.
+
 \bibitem[\citeproctext]{ref-kristensenTMBAutomaticDifferentiation2016}
 Kristensen, K., Nielsen, A., Berg, C.W., Skaug, H., Bell, B.M., 2016.
 {TMB}: {Automatic Differentiation} and {Laplace Approximation}. Journal
@@ -554,6 +690,18 @@ N.B., Pilling, G., Nicol, S., 2023. Estimating trends and magnitudes of
 bycatch in the tuna fisheries of the {Western} and {Central Pacific
 Ocean}. Fish and Fisheries 24, 812--828.
 \url{https://doi.org/10.1111/faf.12771}
+
+\bibitem[\citeproctext]{ref-rueApproximateBayesianInference2009}
+Rue, H., Martino, S., Chopin, N., 2009. Approximate {Bayesian Inference}
+for {Latent Gaussian} models by using {Integrated Nested Laplace
+Approximations}. Journal of the Royal Statistical Society Series B:
+Statistical Methodology 71, 319--392.
+\url{https://doi.org/10.1111/j.1467-9868.2008.00700.x}
+
+\bibitem[\citeproctext]{ref-shonoApplicationTweedieDistribution2008}
+Shono, H., 2008. Application of the {Tweedie} distribution to zero-catch
+data in {CPUE} analysis. Fisheries Research 93, 154--162.
+\url{https://doi.org/10.1016/j.fishres.2008.03.006}
 
 \bibitem[\citeproctext]{ref-stockUtilitySpatialModelbased2019}
 Stock, B.C., Ward, E.J., Thorson, J.T., Jannot, J.E., Semmens, B.X.,
@@ -609,6 +757,83 @@ Fisheries and Aquatic Sciences 79, 148--158.
 \newpage{}
 
 \section{Tables}\label{tables}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\caption{List of bycatch taxa by set type (FOB=floating object, FSC=free
+school), and their classification (`Group' column).}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Set type
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Taxon
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Short name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Description
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Group
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Set type
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Taxon
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Short name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Description
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Group
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+FOB & \emph{Elagatis bipinnulata} & E. bipinnulata & - & Common \\
+FOB & Balistidae & Balistidae & Mostly \emph{Canthidermis maculata} &
+Common \\
+FOB & Coryphaenidae & Coryphaenidae & Mostly \emph{Coryphaena hippurus}
+& Common \\
+FOB & \emph{Acanthocybium solandri} & A. solandri & - & Common \\
+FOB & Carangidae & Carangidae & Mostly \emph{Caranx crysos} & Common \\
+FOB & Carcharhinidae & Carcharhinidae & Mostly \emph{Carcharhinus
+falciformis} & Special interest \\
+FOB & \emph{Makaira nigricans} & M. nigricans & - & Special interest \\
+FOB & Sphyrnidae & Sphyrnidae & Mostly \emph{Sphyrna mokarran},
+\emph{Sphyrna lewini}, and \emph{Sphyrna zygaena} & Special interest \\
+FOB & Cheloniidae & Cheloniidae & Mostly \emph{Eretmochelys imbricata},
+\emph{Chelonia mydas}, \emph{Lepidochelys olivacea}, \emph{Lepidochelys
+kempii}, and \emph{Dermochelys coriacea} & Special interest \\
+FOB & Mobulidae & Mobulidae & Mostly \emph{Mobula birostris} and
+\emph{Mobula mobular} & Special interest \\
+FOB & Alopiidae & Alopiidae & Mostly \emph{Alopias vulpinus} & Rare \\
+FOB & \emph{Xiphias gladius} & X. gladius & - & Rare \\
+FOB & Lamnidae & Lamnidae & Mostly \emph{Lamna nasus} and \emph{Isurus
+oxyrinchus} & Rare \\
+FOB & \emph{Prionace glauca} & P. glauca & - & Rare \\
+FSC & Carcharhinidae & Carcharhinidae & See above & Common \\
+FSC & Mobulidae & Mobulidae & See above & Common \\
+FSC & \emph{Istiophorus albicans} & I. albicans & - & Common \\
+FSC & \emph{Makaira nigricans} & M. nigricans & - & Special interest \\
+FSC & Sphyrnidae & Sphyrnidae & See above & Special interest \\
+FSC & Cheloniidae & Cheloniidae & See above & Special interest \\
+FSC & Molidae & Molidae & Mostly \emph{Mola mola} & Special interest \\
+FSC & Lamnidae & Lamnidae & See above & Rare \\
+FSC & \emph{Prionace glauca} & P. glauca & - & Rare \\
+FSC & Istiophoridae & Istiophoridae & Other marlin species than
+\emph{Istiophorus albicans} and \emph{Makaira nigricans} & Rare \\
+\end{longtable}
+
+\newpage{}
+
+\section{Figures}\label{figures}
 
 
 

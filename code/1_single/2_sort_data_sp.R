@@ -82,7 +82,11 @@ if(this_goal == 'sample-coverage') {
                                                         'Carcharhinidae', 'M. nigricans', 'Sphyrnidae', 'Chelonioidea', 'Mobulidae',
                                                         'Alopiidae', 'X. gladius', 'Lamnidae', 'P. glauca'))
   }
-  # TODO: add filter for FSC
+  if(this_type == 'FSC') {
+    weight_data = weight_data %>% filter(sp_name %in% c('Carcharhinidae', 'Mobulidae', 'I. albicans',
+                                                        'M. nigricans', 'Sphyrnidae', 'Chelonioidea', 'Molidae',
+                                                        'Lamnidae', 'P. glauca', 'Istiophoridae'))
+  }
 }
   
 # Combine per id set:

@@ -80,8 +80,6 @@ rbbt::bbt_update_bib(path_rmd = qmd_file,
 
 <br>
 
-
-
 <br>
 
 *Keywords*
@@ -100,27 +98,25 @@ Despite their widespread use, there are a number of potential issues in applying
 
 Spatiotemporal models are increasingly adopted in multiple fisheries applications [@grussSupportingStockAssessment2023; @thorsonGuidanceDecisionsUsing2019; @ducharme-barthImpactsFisheriesdependentSpatial2022], including undertaking bycatch analyses (e.g., @yanSpatiotemporalModelingBycatch2022). These models can provide detailed predictions for any location based on spatial autocorrelation in the observations. However, they are also complicated and require more data to generate robust predictions, which make it unsuitable for data-poor fisheries. In the majority of cases, spatially explicit model-based estimators have increased precision relative to simpler estimators that assign observations to strata [@thorsonGeostatisticalDeltageneralizedLinear2015; @thorsonAccountingSpaceTime2013]. There are a number of additional advantages of spatial models, including the ability to better quantify shifts in distribution [@thorsonModelbasedInferenceEstimating2016] and improved ability to identify fine-scale hotspots of high bycatch [@cosandey-godinApplyingBayesianSpatiotemporal2015]. For tuna fisheries, spatiotemporal models like generalized additive models (GAMs) have recently been used to obtain annual estimates of the most important bycatch species [@dumontModelingBycatchAbundance2024; @peatmanEstimatingTrendsMagnitudes2023].
 
-In this study, we implemented a simulation experiment to evaluate the impacts of different levels of sampling coverage on the annual bycatch estimates derived from design-based and model-based estimators. Our hypothesis is that model-based estimators may provide more accurate bycatch estimates under low sampling coverage scenarios. We used data from the Spanish purse seine tuna fishery operating in the Atlantic Ocean as study case. We performed our analyses differentiating by set type: operating on free schools (FSC) or floating objects (FOB), since they have different bycatch dynamics [@peatmanEstimatingTrendsMagnitudes2023]. Our simulation experiment may be extended to other fisheries with fine-scale bycatch information and support the implementation of sampling programmes across tuna RFMOs. 
+In this study, we implemented a simulation experiment to evaluate the impacts of different levels of sampling coverage on the annual bycatch estimates derived from design-based and model-based estimators. Our hypothesis is that model-based estimators may provide more accurate bycatch estimates under low sampling coverage scenarios. We used data from the Spanish purse seine tuna fishery operating in the Atlantic Ocean as study case. We performed our analyses differentiating by set type: operating on free schools (FSC) or floating objects (FOB), since they have different bycatch dynamics [@peatmanEstimatingTrendsMagnitudes2023]. Our simulation experiment may be extended to other fisheries with fine-scale bycatch information and support the implementation of sampling programmes across tuna RFMOs.
 
 # Methods
 
-In the following sections, we describe the data used in our analyses, the design and model-based estimators, and the simulation framework.
+In the following sections, we describe the data used in our analyses, the design and model-based estimators, and the simulation framework. The analyses described below were performed by set type independently.
 
 ## Data
 
-We used two data sources in our study: observers and effort data. 
+Our analyses use data collected by scientific observers aboard tropical purse seine vessels operating in the Atlantic Ocean between 2015 and 2023 (*observers data*). This dataset includes records from both the Spanish scientific monitoring program (EU Data Collection Framework) and the industry-funded Best Practices program, covering Spanish vessels and those under other flags affiliated with ANABAC and OPAGAC associations.
 
-**Observers data**: cover the activity of Spanish purse seiners sourced from different public scientific programmes, notably the Data Collection Framework, as well as the activity of vessels from different nations registered with OPAGAC-AGAC under flag states, coastal states or the Code of Good Practices observer programme in the tropical Atlantic Ocean between the 2015 and 2023. The observer programmes referred to above collect various types of information, including details on fishing activities, such as the location of fishing sets, the type of set or the fishing mode (FSC or FOB); the amount of target catch and bycatch that is retained and discarded by species, and the condition at release of the fish that are discarded. Observers identify specimens at the lowest possible taxonomic level, which is generally the species level.
+Regardless of the monitoring program, observers followed a standardized protocol. They recorded detailed information for each fishing set, including estimates of target tuna catch and bycatch. For larger bycatch species such as elasmobranchs and billfish, all individuals were counted. For smaller, more abundant species, estimates were often based on visual assessments. In addition to counts, observers conducted length sampling to convert numbers into biomass using species-specific length-weight relationships. Taxa were identified to the species level whenever possible, although in rare cases, only higher taxonomic groups (e.g., family) were recorded. Our analyses use bycatch data in weight since it was available for all taxa in the dataset.
 
-**Effort data**: describe
+The *effort data* used in our analyses pertain exclusively to the Spanish fleet for the same period and fishing ground. This information is sourced from the logbooks completed by the captains, who are required to record details of each fishing trip, including the location and date of every fishing operation.
 
-## Species composition standardization
+This study does not present results for all taxa found in the purse seine fleet's bycatch. We removed tuna-like species from our analyses. Then, a targeted selection of species or groups of species was made to represent three categories: the most abundant taxa, the rare or less prevalent ones, and those considered vulnerable or of special interest. The list of these taxa differed by set type and are presented in @tbl-taxa.
 
-Describe
+## Model fitting {#sec-fit}
 
-## Model fitting
-
-We use the *sdmTMB* geostatistical spatiotemporal model [@Anderson2024] to fit taxon-specific bycatch per set (in weight) in the observers data. Geostatistical spatiotemporal models have become widely used in fisheries over the last decade [@Anderson2024; @thorsonGuidanceDecisionsUsing2019], and are used when georeferenced data (e.g. each has a corresponding latitude and longitude) with an underlying spatial process is available. *sdmTMB* is written in Template Model Builder (TMB, @kristensenTMBAutomaticDifferentiation2016) and R [@rcoreteamLanguageEnvironmentStatistical2025] for a friendly user interface, and can be viewed as an extension of generalized linear mixed models (GLMMs), but with additional spatial and spatiotemporal components, which are approximated as random effects.
+We use the *sdmTMB* geostatistical spatiotemporal model [@Anderson2024] to fit taxon-specific bycatch per set (in weight) using the observers data. Geostatistical spatiotemporal models have become widely used in fisheries over the last decade [@Anderson2024; @thorsonGuidanceDecisionsUsing2019], and are used when georeferenced data (e.g. each has a corresponding latitude and longitude) with an underlying spatial process is available. *sdmTMB* is written in Template Model Builder (TMB, @kristensenTMBAutomaticDifferentiation2016) and R [@rcoreteamLanguageEnvironmentStatistical2025] for a friendly user interface, and can be viewed as an extension of generalized linear mixed models (GLMMs), but with additional spatial and spatiotemporal components, which are approximated as random effects.
 
 Mathematically, the model structure can be expressed as:
 
@@ -128,15 +124,49 @@ $$u_{s=1:S,t}=f^{-1}(Xb+\omega+\epsilon_t)$$
 
 where $\u$ represents the bycatch predictions at locations $s=1:S$ for a given year $t$, $f^{-1}()$ is the inverse link function, $X$ represents the design matrix of fixed effects, $b$ is the vector of estimated parameters, $\omega$ are the estimated latent spatial effects, and $\epsilon_t$ represents year-to-year latent spatiotemporal effects. $\omega$ represents a spatial intercept that is constant with time while $\epsilon_t$ represents spatial deviations over time, and both are modelled as Gaussian random fields (GRFs):
 
-$$\omega \sim MVN(0,\Sigma_\omega)$$
-$$\epsilon \sim MVN(0,\Sigma_\epsilon)$$
+$$\omega \sim MVN(0,\Sigma_\omega)$$ $$\epsilon \sim MVN(0,\Sigma_\epsilon)$$
 
-where $MVN$ is the multivariate normal distribution, and the covariance matrix $\Sigma$ is modelled with Matérn covariance [@lindgrenExplicitLinkGaussian2011; @maternSpatialVariation1986], which defines the rate at which spatial covariance decays with distance.
+where $MVN$ is the multivariate normal distribution, and the covariance matrix $\Sigma$ is modelled with Matérn covariance [@lindgrenExplicitLinkGaussian2011; @maternSpatialVariation1986], which defines the rate at which spatial covariance decays with distance. *sdmTMB* approximates the GRF by relying on the Stochastic Partial Differential Equation (SPDE) approach using the Integrated Nested Laplace Approximation in *R-INLA* to reduce computational costs [@rueApproximateBayesianInference2009]. The first step when using the SPDE approach is to construct the mesh, which, in our case, was composed of triangles covering the studied area with a minimum allowed triangle edge length (*cutoff*) of 1.5 degrees.
 
-We used the Tweedie distribution $Tweedie(\mu, \phi^2,p)$, where $1<p<2$, and a log link function [@tweedieIndexWhichDistinguishes1984]. For fixed effects, we incorporated the year and quarter effects as factors, and the target tuna catch (the sum of skipjack, yellowfin, and bigeye tunas) as a continuous covariate.
+For some taxa, especially the less recurrent ones, the inclusion of both the spatial and spatiotemporal terms caused the model failed to converge. For those cases, we reran the model only including the spatial term in order to simplify the model structure.
 
-## Simulation
+We used the Tweedie distribution $Tweedie(\mu, \phi^2,p)$, where $1<p<2$, and a log link function [@tweedieIndexWhichDistinguishes1984]. The Tweedie model is an extension of compound Poisson model derived from the stochastic process where the weight of the response variable (e.g., catch data) has a gamma distribution and has an advantage of handling the zero-catch data in a unified way [@shonoApplicationTweedieDistribution2008]. For fixed effects, we incorporated the year and quarter effects as factors, and the target tuna catch (the sum of skipjack, yellowfin, and bigeye tunas) as a continuous covariate.
 
+For all fitted models, we checked that the maximum gradient was smaller than 1e-03, the Hessian was invertible, and standard errors were estimated for all fixed effects and did not look unreasonably large ("safety checks"). We then used the *DHARMa* R package [@hartigDHARMaResidualDiagnostics2022] to evaluate the model residuals. Standard raw residuals are not always appropriate when using generalized linear models, and other types of residuals are commonly used instead. *DHARMa* uses a simulation-based approach to create readily interpretable scaled (quantile) residuals for generalized linear mixed models. We analyzed two plots produced by *DHARMa*: 1) the QQ plot residuals, which detects overall deviations from the expected distribution, and 2) the residual vs. predicted plot, which detects trends in residuals along model predictions and simulation outliers.
+
+## Simulation {#sec-sim}
+
+One of the advantages of using models like *sdmTMB* is that we can simulate new observations using a new dataset ("prediction dataset") containing the same covariates used when fitting the model. In our case, we used the effort data as the prediction dataset and simulated new observations (i.e., bycatch in weight for every fishing set in the effort data) using the fitted models for each taxa in @sec-fit. These simulated observations keep the statistical properties of the original bycatch data. We refer to the effort data with simulated bycatch observations as the *simulated data*.
+
+We then took a subset of the simulated data with different sampling coverage scenarios: 5%, 10%, 20%, 30%, 40%, 50%, 70%, and 90%. To approximate real-case situations, we performed this subsetting stratified by year, and then selected the fishing trips observed under that sampling coverage scenario. The obtained *sampled data* represent the observers data that would have been obtained from an observers program with the specified sampling coverage.
+
+Then, using the sampled data, we estimated the annual bycatch using two approaches: ratio and model-based estimator, which are described below.
+
+### Ratio estimator
+
+We used the spatially-stratified bycatch–over-target catch ratio. For a given taxon, the ratio ($R_{y,a}$) was calculated for every defined $5\times 5^\circ$ grid $a$ in the study area and year $y$ as follows:
+
+$$R_{y,a} = \frac{B_{y,a}}{T_{y,a}}$$
+
+where $BY_{y,a}$ is the total bycatch and $TG_{y,a}$ the total tropical tuna catch obtained from the sampled data. In a few cases, there could happen that $T_{y,a}=0$ (e.g., sets with target catch equal to zero or "null sets"), so $R_{y,a}$ could not be calculated. Therefore, exclusively for those cases, we assumed that $R_{y,a}=0$.
+
+Then, assuming a linear relationship between bycatch and target catch, we calculated the total bycatch:
+
+$$\hat{B}_{y,a} = R_{y,a}T^\ast_{y,a}$$
+
+where $T^\ast_{y,a}$ is the total target catch in grid $a$ and year $y$ obtained from the effort data. Especially for low sampling coverage scenarios, it is expected to have missing $R_{y,a}$ values for some grids due to the sampled data do not cover all the grids in the study area. Therefore, exclusively for those grids, $R_{y,a}$ was calculated using $B_{y}/T_{y}$, where $B_{y}$ and $T_{y}$ are the total bycatch and target catch in the whole area, respectively, derived from the information in the sampled data.
+
+Finally, the annual bycatch estimate is calculated: $\hat{B}_{y}=\sum_a \hat{B}_{y,a}$.
+
+### Model-based estimator
+
+We followed the same modelling framework described in @sec-fit. Once the fitted model is obtained, we then made predictions using the effort data, which generated predicted bycatch observations for every fishing set in that dataset. Then, we summed the predicted bycatch values per year to estimate the annual bycatch $\hat{B}_{y}$.
+
+Especially when the sampling coverage is low, we could find cases when a given taxon is not detected in the sampled data (i.e., bycatch equal to zero for all fishing sets). In those cases, the model-based estimator was not run and we assumed $\hat{B}_{y}=0$ for all years. Another special case is when the model did not pass the safety checks (see @sec-fit). In those cases, we were not able to produce bycatch estimates $\hat{B}_{y}$ and reported the rate of model failure.
+
+## Performance
+
+The procedure explained in @sec-sim was repeated 100 times ("replicates") with different seeds to produce the simulated data, therefore we obtained 100 annual bycatch estimates by the ratio and model-based estimators for each taxa $q$. We calculated the relative error for every replicate $i$: $RE_{i,q,y}=(\hat{B}_{i,q,y} - B_{i,q,y})/B_{i,q,y}$, where $B_{i,q,y}$ represents the true annual bycatch obtained from the simulated data. The width of the 95% quantile of RE over replicates was used as a measure of precision and the median as a proxy of bias, and these metrics were used to compare the performance of the ratio and model-based estimators.
 
 # References
 
@@ -146,3 +176,36 @@ We used the Tweedie distribution $Tweedie(\mu, \phi^2,p)$, where $1<p<2$, and a 
 {{< pagebreak >}}
 
 # Tables
+
+| Set type | Taxon | Short name | Description | Group |
+|----|----|----|----|----|
+| FOB | *Elagatis bipinnulata* | E. bipinnulata | \- | Common |
+| FOB | Balistidae | Balistidae | Mostly *Canthidermis maculata* | Common |
+| FOB | Coryphaenidae | Coryphaenidae | Mostly *Coryphaena hippurus* | Common |
+| FOB | *Acanthocybium solandri* | A. solandri | \- | Common |
+| FOB | Carangidae | Carangidae | Mostly *Caranx crysos* | Common |
+| FOB | Carcharhinidae | Carcharhinidae | Mostly *Carcharhinus falciformis* | Special interest |
+| FOB | *Makaira nigricans* | M. nigricans | \- | Special interest |
+| FOB | Sphyrnidae | Sphyrnidae | Mostly *Sphyrna mokarran*, *Sphyrna lewini*, and *Sphyrna zygaena* | Special interest |
+| FOB | Cheloniidae | Cheloniidae | Mostly *Eretmochelys imbricata*, *Chelonia mydas*, *Lepidochelys olivacea*, *Lepidochelys kempii*, and *Dermochelys coriacea* | Special interest |
+| FOB | Mobulidae | Mobulidae | Mostly *Mobula birostris* and *Mobula mobular* | Special interest |
+| FOB | Alopiidae | Alopiidae | Mostly *Alopias vulpinus* | Rare |
+| FOB | *Xiphias gladius* | X. gladius | \- | Rare |
+| FOB | Lamnidae | Lamnidae | Mostly *Lamna nasus* and *Isurus oxyrinchus* | Rare |
+| FOB | *Prionace glauca* | P. glauca | \- | Rare |
+| FSC | Carcharhinidae | Carcharhinidae | See above | Common |
+| FSC | Mobulidae | Mobulidae | See above | Common |
+| FSC | *Istiophorus albicans* | I. albicans | \- | Common |
+| FSC | *Makaira nigricans* | M. nigricans | \- | Special interest |
+| FSC | Sphyrnidae | Sphyrnidae | See above | Special interest |
+| FSC | Cheloniidae | Cheloniidae | See above | Special interest |
+| FSC | Molidae | Molidae | Mostly *Mola mola* | Special interest |
+| FSC | Lamnidae | Lamnidae | See above | Rare |
+| FSC | *Prionace glauca* | P. glauca | \- | Rare |
+| FSC | Istiophoridae | Istiophoridae | Other marlin species than *Istiophorus albicans* and *Makaira nigricans* | Rare |
+
+: List of bycatch taxa by set type (FOB=floating object, FSC=free school), and their classification ('Group' column). {#tbl-taxa}
+
+{{< pagebreak >}}
+
+# Figures

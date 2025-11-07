@@ -11,6 +11,7 @@ library(sdmTMB)
 library(DescTools)
 library(boot)
 library(stars)
+library(stringr)
 library(lubridate)
 library(blockCV)
 library(fmesher)
@@ -36,3 +37,15 @@ dir.create(plot_folder, showWarnings = FALSE, recursive = TRUE)
 # Model folder:
 model_folder = here(file.path("model", "3_sampsize", this_type))
 dir.create(model_folder, showWarnings = FALSE, recursive = TRUE)
+
+# Specify sampling fraction vector:
+frac_vector = c(0.05, seq(from = 0.1, to = 0.5, by = 0.1), 0.7, 0.9)
+
+# Specify species levels:
+if(this_type == 'FOB') {
+  sp_df = data.frame(sp_levels = c("E. bipinnulata", "Balistidae", "Coryphaenidae", "A. solandri", "Carangidae",
+                                    "Carcharhinidae", "M. nigricans", "Sphyrnidae", "Chelonioidea", "Mobulidae",
+                                    "Alopiidae", "Lamnidae", "P. glauca"),
+                     sp_type = c(rep("Common", times = 5), rep("Special interest", times = 5),
+                                 rep("Rare", times = 3)) )
+}

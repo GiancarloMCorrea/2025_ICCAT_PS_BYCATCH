@@ -15,9 +15,6 @@ effPoints$id_obs = 1:nrow(effPoints) # to do matching later
 # Specify number of simulations:
 nSims = 100
 
-# Specify sampling fraction vector:
-frac_vector = c(0.05, seq(from = 0.1, to = 0.5, by = 0.1), 0.7, 0.9)
-
 # Mesh cutoff:
 mesh_cutoff = 1.5 # same as in part 1
 
@@ -101,7 +98,7 @@ trash = snowfall::sfLapply(1:nSims, function(j) {
       true_data$sim = paste0("sim_", j)
       true_data$samp_frac = frac_vector[i]
       
-      # Now calculate bycatch per year for each sim:
+      # Prepare data for bycatch estimation:
       obs_data$bycatch = sim_matrix[obs_data$id_obs, j]
       obs_data$sp_name = these_sp[isp]
       if(j == 1) {
@@ -133,27 +130,38 @@ trash = snowfall::sfLapply(1:nSims, function(j) {
       if(length(qt_keep) == 1) {
         this_formula = list(update(this_formula[[1]], ~ . - quarter))
       }
-      # Add fyear:
-      sp_data = sp_data %>% mutate(fyear = factor(year, levels = sort(unique(sp_data$year))))
-      # Make mesh:
-      sp_mesh = sdmTMB::make_mesh(data = sp_data, xy_cols = c('lon', 'lat'),
-                                  mesh = fmesher::fm_mesh_2d( sp_data[,c('lon', 'lat')], 
-                                                              cutoff = mesh_cutoff ))
-      # Run model:
-      sdmtmb_df = run_sdmTMB_model(sp_data = sp_data, this_formula = this_formula, 
-                                  sp_mesh = sp_mesh, this_sp = these_sp[isp], 
-                                  effPoints = effPoints, yr_keep = yr_keep, qt_keep = qt_keep,
-                                  save_model = FALSE, make_plots = FALSE, save_results = FALSE,
-                                  check_residuals = FALSE)
-      # Merge with results df:
-      if(!is.null(sdmtmb_df)) { 
-        sdmtmb_df = sdmtmb_df %>% rename(est_model = est)
-        estimate_df = left_join(estimate_df, 
-                                sdmtmb_df %>% select(year, est_model, category), 
-                                by = c("year"))
-      } else {
-        estimate_df$est_model = NA
-        estimate_df$category = NA
+      if(nrow(sp_data) > 0) { # if there is still data, then run model:
+        
+        # Add fyear:
+        sp_data = sp_data %>% mutate(fyear = factor(year, levels = sort(unique(sp_data$year))))
+        # Make mesh:
+        sp_mesh = sdmTMB::make_mesh(data = sp_data, xy_cols = c('lon', 'lat'),
+                                    mesh = fmesher::fm_mesh_2d( sp_data[,c('lon', 'lat')], 
+                                                                cutoff = mesh_cutoff ))
+        # Run model:
+        sdmtmb_df = run_sdmTMB_model(sp_data = sp_data, this_formula = this_formula, 
+                                     sp_mesh = sp_mesh, this_sp = these_sp[isp], 
+                                     effPoints = effPoints, yr_keep = yr_keep, qt_keep = qt_keep,
+                                     save_model = FALSE, make_plots = FALSE, save_results = FALSE,
+                                     check_residuals = FALSE)
+        # Merge with results df:
+        if(!is.null(sdmtmb_df)) { 
+          sdmtmb_df = sdmtmb_df %>% rename(est_model = est)
+          estimate_df = left_join(estimate_df, 
+                                  sdmtmb_df %>% select(year, est_model, category), 
+                                  by = c("year"))
+          estimate_df$est_model[is.na(estimate_df$est_model)] = 0 # fill NA with zeros
+          estimate_df$category = mean(estimate_df$category, na.rm = TRUE) # to fill NA when missing years
+        } else { # if model failed, then NA:
+          estimate_df$est_model = NA
+          estimate_df$category = 3 # model failed identifier
+        }
+        
+      } else { # If missing data, then estimate = 0:
+        
+        estimate_df$est_model = 0
+        estimate_df$category = 4 # no data identifier
+        
       }
       
       # Save results
