@@ -4,4 +4,9 @@
 .Ruserdata
 .RDataTmp
 model/
+slides/*.html
+slides/*.pdf
+document/*.pdf
+document/*.docx
+document/*.tex
 data/
