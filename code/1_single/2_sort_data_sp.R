@@ -73,6 +73,9 @@ weight_data$sp_name[weight_data$sp_name %in% c('Sphyraenidae', 'S. barracuda')] 
 weight_data$sp_name[weight_data$sp_name %in% c('Carangidae', 'C. crysos')] <- 'Carangidae' 
 weight_data = weight_data %>% filter(!(sp_name %in% c('Elasmobranchii', 'Osteichthyes', 'Scombridae', 'T. alalunga')))
 
+# Save data for plotting later:
+saveRDS(object = weight_data, file = file.path(data_folder, 'weight_data_all.rds'))
+
 # IMPORTANT:
 # Select species for analyses. This will depend on the goal: 'estimation' or 'sample-coverage'
 # Do not filter when goal is 'estimation'
@@ -80,12 +83,12 @@ if(this_goal == 'sample-coverage') {
   if(this_type == 'FOB') {
     weight_data = weight_data %>% filter(sp_name %in% c('E. bipinnulata', 'Balistidae', 'Coryphaenidae', 'A. solandri', 'Carangidae',
                                                         'Carcharhinidae', 'M. nigricans', 'Sphyrnidae', 'Chelonioidea', 'Mobulidae',
-                                                        'Alopiidae', 'X. gladius', 'Lamnidae', 'P. glauca'))
+                                                        'Alopiidae', 'Lamnidae', 'P. glauca'))
   }
   if(this_type == 'FSC') {
     weight_data = weight_data %>% filter(sp_name %in% c('Carcharhinidae', 'Mobulidae', 'I. albicans',
                                                         'M. nigricans', 'Sphyrnidae', 'Chelonioidea', 'Molidae',
-                                                        'Lamnidae', 'P. glauca', 'Istiophoridae'))
+                                                        'Lamnidae', 'P. glauca'))
   }
 }
   

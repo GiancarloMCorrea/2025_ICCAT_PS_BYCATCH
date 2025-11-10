@@ -49,6 +49,20 @@ format:
         \newcommand{\elandscape}{\end{landscape}}
 geometry: "left=2.5cm,right=2.5cm,top=3cm,bottom=3cm"
 editor: source
+crossref:
+  custom:
+    - kind: float
+      key: suppfig
+      latex-env: suppfig
+      reference-prefix: Figure S
+      space-before-numbering: false
+      latex-list-of-description: Supplementary Figure
+    - kind: float
+      key: supptbl
+      latex-env: supptbl
+      reference-prefix: Table S
+      space-before-numbering: false
+      latex-list-of-description: Supplementary Table
 number-sections: true
 bibliography: ../references.bib
 ---
@@ -71,7 +85,7 @@ qmd_file = this.path()
 options(knitr.kable.NA = '')
 # This will automatically update the BIB file:
 keys = rbbt::bbt_detect_citations(qmd_file)
-bbt_ignore = keys[grepl("fig-|tbl-|eq-|sec-", keys)]
+bbt_ignore = keys[grepl("fig-|tbl-|eq-|sec-|suppfig-|supptbl-", keys)]
 rbbt::bbt_update_bib(path_rmd = qmd_file, 
                      ignore = bbt_ignore, overwrite = T, translator = "bibtex")
 ```
@@ -112,7 +126,7 @@ Regardless of the monitoring program, observers followed a standardized protocol
 
 The *effort data* used in our analyses pertain exclusively to the Spanish fleet for the same period and fishing ground. This information is sourced from the logbooks completed by the captains, who are required to record details of each fishing trip, including the location and date of every fishing operation.
 
-This study does not present results for all taxa found in the purse seine fleet's bycatch. We removed tuna-like species from our analyses. Then, a targeted selection of species or groups of species was made to represent three categories: the most abundant taxa, the rare or less prevalent ones, and those considered vulnerable or of special interest. The list of these taxa differed by set type and are presented in @tbl-taxa.
+This study does not present results for all taxa found in the purse seine fleet's bycatch. We removed tuna-like species from our analyses. Then, a targeted selection of species or groups of species was made to represent three categories: the most abundant taxa, the rare or less prevalent ones, and those considered vulnerable or of special interest. The list of these taxa differed by set type and are presented in @tbl-taxa and @fig-freq-sp.
 
 ## Model fitting {#sec-fit}
 
@@ -126,7 +140,7 @@ where $\u$ represents the bycatch predictions at locations $s=1:S$ for a given y
 
 $$\omega \sim MVN(0,\Sigma_\omega)$$ $$\epsilon \sim MVN(0,\Sigma_\epsilon)$$
 
-where $MVN$ is the multivariate normal distribution, and the covariance matrix $\Sigma$ is modelled with Matérn covariance [@lindgrenExplicitLinkGaussian2011; @maternSpatialVariation1986], which defines the rate at which spatial covariance decays with distance. *sdmTMB* approximates the GRF by relying on the Stochastic Partial Differential Equation (SPDE) approach using the Integrated Nested Laplace Approximation in *R-INLA* to reduce computational costs [@rueApproximateBayesianInference2009]. The first step when using the SPDE approach is to construct the mesh, which, in our case, was composed of triangles covering the studied area with a minimum allowed triangle edge length (*cutoff*) of 1.5 degrees.
+where $MVN$ is the multivariate normal distribution, and the covariance matrix $\Sigma$ is modelled with Matérn covariance [@lindgrenExplicitLinkGaussian2011; @maternSpatialVariation1986], which defines the rate at which spatial covariance decays with distance. *sdmTMB* approximates the GRF by relying on the Stochastic Partial Differential Equation (SPDE) approach using the Integrated Nested Laplace Approximation in *R-INLA* to reduce computational costs [@rueApproximateBayesianInference2009]. The first step when using the SPDE approach is to construct the mesh, which, in our case, was composed of triangles covering the studied area with a minimum allowed triangle edge length (*cutoff*) of 1.5 degrees (@suppfig-mesh-fob and @suppfig-mesh-fsc).
 
 For some taxa, especially the less recurrent ones, the inclusion of both the spatial and spatiotemporal terms caused the model failed to converge. For those cases, we reran the model only including the spatial term in order to simplify the model structure.
 
@@ -138,7 +152,7 @@ For all fitted models, we checked that the maximum gradient was smaller than 1e-
 
 One of the advantages of using models like *sdmTMB* is that we can simulate new observations using a new dataset ("prediction dataset") containing the same covariates used when fitting the model. In our case, we used the effort data as the prediction dataset and simulated new observations (i.e., bycatch in weight for every fishing set in the effort data) using the fitted models for each taxa in @sec-fit. These simulated observations keep the statistical properties of the original bycatch data. We refer to the effort data with simulated bycatch observations as the *simulated data*.
 
-We then took a subset of the simulated data with different sampling coverage scenarios: 5%, 10%, 20%, 30%, 40%, 50%, 70%, and 90%. To approximate real-case situations, we performed this subsetting stratified by year, and then selected the fishing trips observed under that sampling coverage scenario. The obtained *sampled data* represent the observers data that would have been obtained from an observers program with the specified sampling coverage.
+We then took a subset of the simulated data with different sampling coverage scenarios: 5%, 10%, 20%, 30%, 40%, 50%, 70%, and 90%. To approximate real-case situations, we performed this subsetting stratified by year, and then selected the fishing trips observed under that sampling coverage scenario. The obtained *sampled data* represent the observers data that would have been obtained from an observers program with the specified sampling coverage. @suppfig-map-loc1 and @suppfig-map-loc2 show how the presence of a common and rare taxa, respectively, in the sampled data is affected by the sampling coverage.
 
 Then, using the sampled data, we estimated the annual bycatch using two approaches: ratio and model-based estimator, which are described below.
 
@@ -168,6 +182,12 @@ Especially when the sampling coverage is low, we could find cases when a given t
 
 The procedure explained in @sec-sim was repeated 100 times ("replicates") with different seeds to produce the simulated data, therefore we obtained 100 annual bycatch estimates by the ratio and model-based estimators for each taxa $q$. We calculated the relative error for every replicate $i$: $RE_{i,q,y}=(\hat{B}_{i,q,y} - B_{i,q,y})/B_{i,q,y}$, where $B_{i,q,y}$ represents the true annual bycatch obtained from the simulated data. The width of the 95% quantile of RE over replicates was used as a measure of precision and the median as a proxy of bias, and these metrics were used to compare the performance of the ratio and model-based estimators.
 
+# Results
+
+## FOB sets
+
+For common taxa, the model-based converged for all replicates and included both the spatial $\omega$ and spatiotemporal $\epsilon$ terms when the sampling coverage was larger than 20% (@fig-conv-fob). However, when the sampling coverage was lower than 20%, the model-based estimator still converged but had a simpler structure by only including the spatial term in most replicates. Likewise, for taxa with special interest, the model-based estimator still showed a good performance for intermediate and large sampling coverage, although we observed that the model failed for some taxa (e.g., *Makaira nigricans* or Mobulidae) when the sampling coverage was lower than 10% (@fig-conv-fob). For rare taxa, 
+
 # References
 
 ::: {#refs}
@@ -186,12 +206,11 @@ The procedure explained in @sec-sim was repeated 100 times ("replicates") with d
 | FOB | Carangidae | Carangidae | Mostly *Caranx crysos* | Common |
 | FOB | Carcharhinidae | Carcharhinidae | Mostly *Carcharhinus falciformis* | Special interest |
 | FOB | *Makaira nigricans* | M. nigricans | \- | Special interest |
-| FOB | Sphyrnidae | Sphyrnidae | Mostly *Sphyrna mokarran*, *Sphyrna lewini*, and *Sphyrna zygaena* | Special interest |
-| FOB | Cheloniidae | Cheloniidae | Mostly *Eretmochelys imbricata*, *Chelonia mydas*, *Lepidochelys olivacea*, *Lepidochelys kempii*, and *Dermochelys coriacea* | Special interest |
-| FOB | Mobulidae | Mobulidae | Mostly *Mobula birostris* and *Mobula mobular* | Special interest |
+| FOB | Sphyrnidae | Sphyrnidae | Mix of *Sphyrna mokarran*, *Sphyrna lewini*, and *Sphyrna zygaena* | Special interest |
+| FOB | Cheloniidae | Cheloniidae | Mix of *Eretmochelys imbricata*, *Chelonia mydas*, *Lepidochelys olivacea*, *Lepidochelys kempii*, and *Dermochelys coriacea* | Special interest |
+| FOB | Mobulidae | Mobulidae | Mix of *Mobula birostris* and *Mobula mobular* | Special interest |
 | FOB | Alopiidae | Alopiidae | Mostly *Alopias vulpinus* | Rare |
-| FOB | *Xiphias gladius* | X. gladius | \- | Rare |
-| FOB | Lamnidae | Lamnidae | Mostly *Lamna nasus* and *Isurus oxyrinchus* | Rare |
+| FOB | Lamnidae | Lamnidae | Mix of *Lamna nasus* and *Isurus oxyrinchus* | Rare |
 | FOB | *Prionace glauca* | P. glauca | \- | Rare |
 | FSC | Carcharhinidae | Carcharhinidae | See above | Common |
 | FSC | Mobulidae | Mobulidae | See above | Common |
@@ -202,10 +221,72 @@ The procedure explained in @sec-sim was repeated 100 times ("replicates") with d
 | FSC | Molidae | Molidae | Mostly *Mola mola* | Special interest |
 | FSC | Lamnidae | Lamnidae | See above | Rare |
 | FSC | *Prionace glauca* | P. glauca | \- | Rare |
-| FSC | Istiophoridae | Istiophoridae | Other marlin species than *Istiophorus albicans* and *Makaira nigricans* | Rare |
+| FSC | Istiophoridae | Istiophoridae | Marlin species other than *Istiophorus albicans* and *Makaira nigricans* | Rare |
 
 : List of bycatch taxa by set type (FOB=floating object, FSC=free school), and their classification ('Group' column). {#tbl-taxa}
 
 {{< pagebreak >}}
 
 # Figures
+
+![Frequency of sets (2015-2023) with presence of taxa analyzed in this study. The taxa categorization is shown in color (see @tbl-taxa for details).](../figures/3_sampsize/freq_sp.png){#fig-freq-sp}
+
+{{< pagebreak >}}
+
+![Frequency of replicates for which the model-based estimator was not run due to missing data, failed, included only the spatial component ($\omega$), or included the spatial and spatiotemporal component ($\omega + \epsilon$). Information for FOB sets and shown by taxa and sampling coverage scenario.](../figures/3_sampsize/FOB/conv_model.png){#fig-conv-fob}
+
+{{< pagebreak >}}
+
+![Relative error by ratio and model-based estimator aggregated over the years. The dots and line range represent the median and the 95% of values across replicates, respectively. Information for FOB sets and shown by taxa and sampling coverage scenario.](../figures/3_sampsize/FOB/agg_re.png){#fig-re-fob}
+
+{{< pagebreak >}}
+
+![Frequency of replicates for which the model-based estimator was not run due to missing data, failed, included only the spatial component ($\omega$), or included the spatial and spatiotemporal component ($\omega + \epsilon$). Information for FSC sets and shown by taxa and sampling coverage scenario.](../figures/3_sampsize/FSC/conv_model.png){#fig-conv-fsc}
+
+{{< pagebreak >}}
+
+![Relative error by ratio and model-based estimator aggregated over the years. The dots and line range represent the median and the 95% of values across replicates, respectively. Information for FSC sets and shown by taxa and sampling coverage scenario.](../figures/3_sampsize/FSC/agg_re.png){#fig-re-fsc}
+
+{{< pagebreak >}}
+
+# Supplementary Material
+
+## Figures
+
+![Mesh used in sdmTMB models fitting bycatch taxa in FOB sets. The black dots are the mesh nodes and the gray dots are the FOB sets locations in the observers data from 2015 to 2023.](../figures/1_single/FOB/map_mesh_obs.png){#suppfig-mesh-fob}
+
+{{< pagebreak >}}
+
+![Mesh used in sdmTMB models fitting bycatch taxa in FSC sets. The black dots are the mesh nodes and the gray dots are the FSC sets locations in the observers data from 2015 to 2023.](../figures/1_single/FSC/map_mesh_obs.png){#suppfig-mesh-fsc}
+
+{{< pagebreak >}}
+
+![Locations of FOB sets with presence of a common taxon (*Acanthocybium solandri*) in the bycatch composition under different sampling coverage scenarios.](../figures/3_sampsize/FOB/sim_spatial/map_1.png){#suppfig-map-loc1}
+
+{{< pagebreak >}}
+
+![Locations of FOB sets with presence of a rare taxon (Alopiidae) in the bycatch composition under different sampling coverage scenarios.](../figures/3_sampsize/FOB/sim_spatial/map_2.png){#suppfig-map-loc2}
+
+{{< pagebreak >}}
+
+![Relative error by ratio and model-based estimator per year. The continuous line and the shaded area represent the median and the 95% of values across replicates, respectively. Information for FOB sets and common taxa (see @tbl-taxa) and shown by sampling coverage scenario.](../figures/3_sampsize/FOB/yr_re_Common.png){#suppfig-reyr-co-fob}
+
+{{< pagebreak >}}
+
+![Relative error by ratio and model-based estimator per year. The continuous line and the shaded area represent the median and the 95% of values across replicates, respectively. Information for FOB sets and special interest taxa (see @tbl-taxa) and shown by sampling coverage scenario.](../figures/3_sampsize/FOB/yr_re_Specialinterest.png){#suppfig-reyr-si-fob}
+
+{{< pagebreak >}}
+
+![Relative error by ratio and model-based estimator per year. The continuous line and the shaded area represent the median and the 95% of values across replicates, respectively. Information for FOB sets and rare taxa (see @tbl-taxa) and shown by sampling coverage scenario.](../figures/3_sampsize/FOB/yr_re_Rare.png){#suppfig-reyr-ra-fob}
+
+{{< pagebreak >}}
+
+![Relative error by ratio and model-based estimator per year. The continuous line and the shaded area represent the median and the 95% of values across replicates, respectively. Information for FSC sets and common taxa (see @tbl-taxa) and shown by sampling coverage scenario.](../figures/3_sampsize/FSC/yr_re_Common.png){#suppfig-reyr-co-fsc}
+
+{{< pagebreak >}}
+
+![Relative error by ratio and model-based estimator per year. The continuous line and the shaded area represent the median and the 95% of values across replicates, respectively. Information for FSC sets and special interest taxa (see @tbl-taxa) and shown by sampling coverage scenario.](../figures/3_sampsize/FSC/yr_re_Specialinterest.png){#suppfig-reyr-si-fsc}
+
+{{< pagebreak >}}
+
+![Relative error by ratio and model-based estimator per year. The continuous line and the shaded area represent the median and the 95% of values across replicates, respectively. Information for FSC sets and rare taxa (see @tbl-taxa) and shown by sampling coverage scenario.](../figures/3_sampsize/FSC/yr_re_Rare.png){#suppfig-reyr-ra-fsc}

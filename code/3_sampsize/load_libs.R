@@ -15,6 +15,7 @@ library(stringr)
 library(lubridate)
 library(blockCV)
 library(fmesher)
+library(wesanderson)
 library(corrplot)
 library(car)
 library(future)
@@ -42,10 +43,18 @@ dir.create(model_folder, showWarnings = FALSE, recursive = TRUE)
 frac_vector = c(0.05, seq(from = 0.1, to = 0.5, by = 0.1), 0.7, 0.9)
 
 # Specify species levels:
-if(this_type == 'FOB') {
-  sp_df = data.frame(sp_levels = c("E. bipinnulata", "Balistidae", "Coryphaenidae", "A. solandri", "Carangidae",
+fob_sp_df = data.frame(sp_levels = c("E. bipinnulata", "Balistidae", "Coryphaenidae", "A. solandri", "Carangidae",
                                     "Carcharhinidae", "M. nigricans", "Sphyrnidae", "Chelonioidea", "Mobulidae",
                                     "Alopiidae", "Lamnidae", "P. glauca"),
                      sp_type = c(rep("Common", times = 5), rep("Special interest", times = 5),
                                  rep("Rare", times = 3)) )
-}
+
+fsc_sp_df = data.frame(sp_levels = c('Carcharhinidae', 'Mobulidae', 'I. albicans',
+                                   'M. nigricans', 'Sphyrnidae', 'Chelonioidea', 'Molidae',
+                                   'Lamnidae', 'P. glauca'),
+                     sp_type = c(rep("Common", times = 3), rep("Special interest", times = 4),
+                                 rep("Rare", times = 2)) )
+
+
+if(this_type == 'FOB') sp_df = fob_sp_df
+if(this_type == 'FSC') sp_df = fsc_sp_df

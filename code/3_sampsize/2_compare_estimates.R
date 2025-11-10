@@ -3,7 +3,7 @@ rm(list = ls())
 # Define type of school to be analyzed:
 source('code/3_sampsize/load_libs.R')
 nSims = 100 # number of sims run
-colorPal = c("blue", "red") # for estimator
+colorPal = wes_palette('Cavalcanti1', n = 5, type = c("discrete"))[c(2,5)] # for estimator
 
 # -------------------------------------------------------------------------
 # Read observed sim data (only for one simulation):
@@ -30,7 +30,7 @@ est_sim = est_sim %>% mutate(samp_frac = factor(samp_frac, levels = frac_vector,
 # Just select one year:
 plot_data = est_sim %>% group_by(sim, samp_frac, sp_name) %>% summarise(category = mean(category, na.rm=TRUE))
 plot_data = plot_data %>% mutate(category = factor(category, levels = 1:4, 
-                                                   labels = c("Omega+Epsilon", "Omega", "Model failed", "Model not run")))
+                                                   labels = c("\u03C9+\u03B5", "\u03C9", "Model failed", "Model not run")))
 
 c1 = ggplot(data = plot_data, aes(x = samp_frac, fill = category)) +
   geom_bar(position = "fill") +
@@ -41,6 +41,7 @@ c1 = ggplot(data = plot_data, aes(x = samp_frac, fill = category)) +
   theme(legend.position = 'bottom',
         strip.text = element_text(size = 12),
         strip.background = element_rect(fill="white"),
+        legend.text=element_text(size=12),
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size = 9),
         axis.text.y = element_text(size = 10)) +
   facet_wrap(~ sp_name, ncol = 3)
