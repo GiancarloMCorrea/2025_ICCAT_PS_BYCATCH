@@ -26,7 +26,7 @@ source('code/parameters_for_plots.R')
 source('code/aux_functions.R')
 
 # SELECT YOUR SET TYPE HERE!:
-this_type = 'FOB' # FOB or FSC
+this_type = 'FSC' # FOB or FSC
 
 # Define plot and data folder:
 # Data folder:
@@ -49,10 +49,10 @@ fob_sp_df = data.frame(sp_levels = c("E. bipinnulata", "Balistidae", "Coryphaeni
                      sp_type = c(rep("Common", times = 5), rep("Special interest", times = 5),
                                  rep("Rare", times = 3)) )
 
-fsc_sp_df = data.frame(sp_levels = c('Carcharhinidae', 'Mobulidae', 'I. albicans',
-                                   'M. nigricans', 'Sphyrnidae', 'Chelonioidea', 'Molidae',
+fsc_sp_df = data.frame(sp_levels = c('Carcharhinidae', 'I. albicans',
+                                     'Mobulidae', 'M. nigricans', 'Sphyrnidae', 'Chelonioidea', 'Molidae',
                                    'Lamnidae', 'P. glauca'),
-                     sp_type = c(rep("Common", times = 3), rep("Special interest", times = 4),
+                     sp_type = c(rep("Common", times = 2), rep("Special interest", times = 5),
                                  rep("Rare", times = 2)) )
 
 
