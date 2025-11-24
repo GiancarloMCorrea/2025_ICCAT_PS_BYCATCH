@@ -94,7 +94,7 @@ if(this_goal == 'sample-coverage') {
   
 # Combine per id set:
 weight_data_clean = weight_data %>% 
-        group_by(id_set,ID,year,quarter,vessel_code,sp_name) %>%
+        group_by(id_set,ID,year,quarter,vessel_code,sp_name,flag_country,trip_start_date) %>%
         summarise(lon=mean(lon),lat=mean(lat),
                   sst=mean(sst),trop_catch=mean(trop_catch),
                   sst_nonstd = mean(sst_nonstd), 

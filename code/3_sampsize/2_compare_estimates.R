@@ -3,7 +3,7 @@ rm(list = ls())
 # Define type of school to be analyzed:
 source('code/3_sampsize/load_libs.R')
 nSims = 100 # number of sims run
-colorPal = wes_palette('Cavalcanti1', n = 5, type = c("discrete"))[c(2,5)] # for estimator
+colorPal = wes_palette('AsteroidCity1', n = 5, type = c("discrete"))[c(3,4)] # for estimator
 
 # -------------------------------------------------------------------------
 # Read observed sim data (only for one simulation):
@@ -15,6 +15,9 @@ for(k in seq_along(these_frac)) {
   # Read all files:
   for(j in seq_along(these_sims)) { 
     save_sim[[i_count]] = readRDS(file = file.path(model_folder, "sim_est", these_frac[k], these_sims[j]))
+    # add this temporally: IMPORTANT: remove later
+    save_sim[[i_count]]$samp_frac = as.numeric(these_frac[k])
+    save_sim[[i_count]]$sim = gsub(pattern = '.rds', replacement = '', x = these_sims[j])
     i_count = i_count + 1
   }
 }

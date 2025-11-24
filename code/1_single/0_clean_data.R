@@ -37,7 +37,7 @@ my_data = my_data %>% rename(date = observation_date,
                              trop_catch = tons_target_tuna,
                              lon = longitude,
                              lat = latitude)
-# Filter data from 2013: (same as effort data)
+# Filter data based on year: (same as effort data)
 my_data = my_data %>% dplyr::filter(year >= str_yr)
 
 # Explore:

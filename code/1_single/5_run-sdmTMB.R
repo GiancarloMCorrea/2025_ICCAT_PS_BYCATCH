@@ -2,7 +2,8 @@ rm(list = ls())
 
 # Define type of school to be analyzed:
 source('code/1_single/load_libs.R')
-mesh_cutoff = 1.5
+if(this_type == 'FOB') mesh_cutoff = 1.5
+if(this_type == 'FSC') mesh_cutoff = 1
 n_cores = 4 # to run in parallel
 
 # -------------------------------------------------------------------------
