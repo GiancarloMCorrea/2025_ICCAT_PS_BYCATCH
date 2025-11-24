@@ -6,7 +6,7 @@ source('code/3_sampsize/load_libs.R')
 
 # Alternative folder to save diagrams:
 # This is important in order to make them public and use the Mermaid editor later:
-alt_plot_folder = 'C:/Use/OneDrive - AZTI/Manuscripts/SampCoverage_PSBycatch'
+alt_plot_folder = "figures/3_sampsize"
 
 # Create fake data:
 
@@ -92,4 +92,70 @@ p2 = ggplot(data = plot_data, aes(x = sp_name, y = freq)) +
 # Merge both plots:
 p3 = grid.arrange(p1, p2, ncol = 2)
 ggsave(paste0('freq_sp', img_type), plot = p3, path = "figures/3_sampsize", 
+       width = img_width , height = 90, units = 'mm', dpi = img_res)
+
+
+# -------------------------------------------------------------------------
+# Plot grid by set type:
+
+load('data/1_single/FOB/MyGrid.RData')
+p1 = ggplot(MyGrid) + geom_sf(fill = 'white')
+p1 = add_sf_map(p1) 
+p1 = p1 + ggtitle("FOB")
+
+load('data/1_single/FSC/MyGrid.RData')
+p2 = ggplot(MyGrid) + geom_sf(fill = 'white')
+p2 = add_sf_map(p2) 
+p2 = p2 + ggtitle("FSC")
+
+# Merge both plots:
+p3 = grid.arrange(p1, p2, ncol = 2)
+ggsave(paste0('grid', img_type), plot = p3, path = "figures/3_sampsize", 
+       width = img_width , height = 90, units = 'mm', dpi = img_res)
+
+
+# -------------------------------------------------------------------------
+# Map points:
+
+# FOB:
+obsPoints = readRDS(file.path("data/1_single/FOB", 'obsPoints.rds'))
+obsSF = obsPoints %>% st_as_sf(coords = c("lon", "lat"), crs = 4326, remove = FALSE)
+p1 = ggplot(obsSF) + geom_sf(size = 1, alpha = 0.5) + ggtitle('FOB')
+p1 = add_sf_map(p1)
+
+# FSC:
+obsPoints = readRDS(file.path("data/1_single/FSC", 'obsPoints.rds'))
+obsSF = obsPoints %>% st_as_sf(coords = c("lon", "lat"), crs = 4326, remove = FALSE)
+p2 = ggplot(obsSF) + geom_sf(size = 1, alpha = 0.5) + ggtitle('FSC')
+p2 = add_sf_map(p2)
+
+# Merge both plots:
+p3 = grid.arrange(p1, p2, ncol = 2)
+ggsave(paste0('sets', img_type), plot = p3, path = "figures/3_sampsize", 
+       width = img_width , height = 90, units = 'mm', dpi = img_res)
+
+# -------------------------------------------------------------------------
+# Number of observations:
+
+# FOB:
+obsPoints = readRDS(file.path("data/1_single/FOB", 'obsPoints.rds'))
+p1 = ggplot(obsPoints, aes(x = factor(year))) + 
+  geom_bar() + 
+  theme_classic() + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) +
+  xlab(NULL) + ylab('Number of observed sets') +
+  ggtitle('FOB')
+
+# FSC:
+obsPoints = readRDS(file.path("data/1_single/FSC", 'obsPoints.rds'))
+p2 = ggplot(obsPoints, aes(x = factor(year))) + 
+  geom_bar() + 
+  theme_classic() + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) +
+  xlab(NULL) + ylab('Number of observed sets') +
+  ggtitle('FSC')
+
+# Merge both plots:
+p3 = grid.arrange(p1, p2, ncol = 2)
+ggsave(paste0('nobs', img_type), plot = p3, path = "figures/3_sampsize", 
        width = img_width , height = 90, units = 'mm', dpi = img_res)
