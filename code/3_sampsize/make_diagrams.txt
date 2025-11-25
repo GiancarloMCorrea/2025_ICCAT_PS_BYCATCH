@@ -1,0 +1,12 @@
+---
+config:
+  theme: redux
+---
+flowchart TD
+    A("Observers data<img src='https://raw.githubusercontent.com/GiancarloMCorrea/2025_ICCAT_PS_BYCATCH/main/figures/3_sampsize/old_figs/tab_sim.png'; width='30' />")
+    subgraph SIM1["<div style="width:30em; height:1.7em; display:flex; justify-content: flex-start; align-items:flex-end;">Repeat 100 times</div>"]
+    B("Randomly subset trips (%)")
+    C("Sampled data<img src='https://raw.githubusercontent.com/GiancarloMCorrea/2025_ICCAT_PS_BYCATCH/main/figures/3_sampsize/old_figs/tab_samp.png'; width='30' />")
+    C --> D["Model-based estimator"] & E["Ratio estimator"]
+    end
+    A --> B --> C
