@@ -18,10 +18,10 @@ mydat = data.frame(Trip_id = rep(1:4, each = 3),
                    T_catch = round(exp(rlnorm(n = 12, meanlog = 1, sdlog = 0.2)), digits = 2))
 # Simulated data:
 mydat2 = mydat %>% mutate(Bycatch = round(exp(rlnorm(n = 12, meanlog = 0.25, sdlog = 0.2)), digits = 2))
-# Sampled data:
-mydat3 = mydat2 %>% filter(Trip_id %in% c(1,3))
 # Observers data:
 mydat4 = mydat2 %>% mutate(Bycatch = round(Bycatch*rnorm(n = 12, mean = 1, sd = 0.1), digits = 2))
+# Sampled data:
+mydat3 = mydat4 %>% filter(Trip_id %in% c(1,3))
 
 # Make figure 
 colpal = RColorBrewer::brewer.pal(n = 4, name = 'Set3')
