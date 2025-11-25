@@ -67,24 +67,18 @@ mydat4 %>% gt %>% data_color(
 ) %>% gtsave(filename = file.path(alt_plot_folder, 'tab_obs.png'))
 
 
-# -------------------------------------------------------------------------
-# Transform png to svg files:
-my_image <- image_read(file.path(alt_plot_folder, 'tab_eff.png'))
-my_svg <- image_convert(my_image, format="svg")
-image_write(my_svg, file.path(alt_plot_folder, 'tab_eff.svg'))
+# Next, since I found issues exporting the mermaid diagram to PNG files directly,
+# I had to export them to SVG files. 
 
-my_image <- image_read(file.path(alt_plot_folder, 'tab_sim.png'))
-my_svg <- image_convert(my_image, format="svg")
-image_write(my_svg, file.path(alt_plot_folder, 'tab_sim.svg'))
+# Then, open the SVG files and save them as PDF (right click on the background and then print)
 
-my_image <- image_read(file.path(alt_plot_folder, 'tab_samp.png'))
-my_svg <- image_convert(my_image, format="svg")
-image_write(my_svg, file.path(alt_plot_folder, 'tab_samp.svg'))
+# After save them as PDF, then convert them to PNG by running the following lines:
 
-my_image <- image_read(file.path(alt_plot_folder, 'tab_obs.png'))
-my_svg <- image_convert(my_image, format="svg")
-image_write(my_svg, file.path(alt_plot_folder, 'tab_obs.svg'))
+img <- image_read_pdf(file.path(alt_plot_folder, "case1.pdf"))
+image_write(img, file.path(alt_plot_folder, "case1.png"))
 
+img <- image_read_pdf(file.path(alt_plot_folder, "case2.pdf"))
+image_write(img, file.path(alt_plot_folder, "case2.png"))
 
 # -------------------------------------------------------------------------
 # Make figure to compare % presence in sets by selected species:
