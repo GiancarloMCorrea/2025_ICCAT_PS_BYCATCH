@@ -1,0 +1,221 @@
+---
+title: "How Observation Coverage Shapes Bycatch Metrics in the Tropical Tuna Purse Seine Fishery"
+author: Giancarlo M. Correa, Jon Ruiz, María Lourdes Ramos, Arnaitz Mugerza, Miguel Herrera, Nekane Alzorriz
+embed-resources: false
+highlight-style: "a11y-dark"
+format: azti-revealjs
+revealjs-plugins:
+  - pointer
+include-in-header:
+  - text: |
+      <link rel = "shortcut icon" href = "azti.svg" />
+title-slide-attributes:
+    data-background-color: "#000000"
+csl: ../elsevier-harvard.csl
+execute:
+  echo: false
+  warning: false
+bibliography: ../references.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, 
+                      verbose = FALSE,
+                      message = FALSE, 
+                      warning = FALSE)
+```
+
+```{r}
+# remotes::install_github("wmoldham/rbbt") # temporarily, until error is fixed
+require(knitr)
+require(jpeg)
+require(rbbt)
+require(dplyr)
+require(flextable)
+require(kableExtra)
+options(knitr.kable.NA = '')
+```
+
+```{r}
+require(knitr)
+require(rbbt)
+require(dplyr)
+require(flextable)
+require(this.path)
+qmd_file = this.path()
+# This will automatically update the BIB file:
+keys = rbbt::bbt_detect_citations(qmd_file)
+bbt_ignore = keys[grepl("fig-|tbl-|eq-|sec-", keys)]
+rbbt::bbt_update_bib(path_rmd = qmd_file, 
+                     ignore = bbt_ignore, overwrite = T, translator = "bibtex")
+```
+
+# Background
+
+## Background
+
+::: incremental
+
+- Bycatch estimates need to be reported to tuna RFMOs
+
+- Ratio estimators widely used across fisheries worldwide
+
+- Observers programmes as a key data source for bycatch estimation
+
+- Sampling coverage in observers programmes may impact bycatch estimates
+
+:::
+
+::: fragment
+
+::: {.callout-tip}
+## Goal
+
+Evaluate the impacts of sampling coverage scenarios on bycatch estimates in tropical tuna purse-seine fisheries. Two estimators were evaluated: ratio and model-based
+:::
+
+:::
+
+# Methods
+
+## Data
+
+::: incremental
+
+- Study area: Atlantic Ocean
+
+- Period: 2015-2023
+
+- *Observers data*: Spanish-owned purse-seine vessels under various flags ($\sim$ 90% coverage)
+
+- *Effort data*: Spanish purse-seine vessels
+
+- Bycatch: in weight, standardized and selected taxa
+
+- Analyses by fishing mode independently: floating objects (FOB) and free school (FSC)
+
+:::
+
+## Bycatch taxa
+
+![](../figures/3_sampsize/freq_sp.png){#fig-freq-sp}
+
+## Spatio-temporal model
+
+They model spatial and spatio-temporal processes. Implemented in the R package *sdmTMB* [@Anderson2024]. The model can be represented as:
+
+$$\mathbb{E}[y] = \mu = g^{-1}(\eta)$$
+
+$$\eta = \mathbf{X}\mathbf{\beta} + \omega_s + \varepsilon_{s,y}$$
+
+$\omega_s$ is the spatial term and $\varepsilon_{s,y}$ is the spatiotemporal term, both constrained by a geostatistical function. $s$ and $y$ represent space and year, respectively.
+
+
+## Simulate data
+
+<br>
+
+::: incremental
+
+1. By taxon, fit spatio-temporal model to observers data. The Tweedie family was used and covariates like year, quarter, and target catch were included
+
+2. Using the fitted model, we can simulate new bycatch data using the effort data (*simulated data*)
+
+3. Randomly sample fishing trips from simulated data (*sampled data*): 5%, 10%, 20%, 30%, 40%, 50%, 70%, 90%
+
+:::
+
+## Simulate data
+
+![](../figures/3_sampsize/FOB/sim_spatial/map_1.png){fig-align="center"}
+
+## Simulate data
+
+![](../figures/3_sampsize/FOB/sim_spatial/map_2.png){fig-align="center"}
+
+## Ratio estimator
+
+Using sampled data, estimate bycatch ratio $R$:
+
+$$R_{y,a} = \frac{B_{y,a}}{T_{y,a}}$$
+
+where $B_{y,a}$ is the aggregated bycatch in year $y$ and grid $a$ ($5\times 5^\circ$) and $T_{y,a}$ is the target catch. Then,
+
+$$\hat{B}_{y,a} = R_{y,a}T^\ast_{y,a}$$
+
+where $T^\ast_{y,a}$ is the target catch in effort data. Finally, annual bycatch is calculated: $\hat{B}_{y} = \sum_a \hat{B}_{y,a}$
+
+## Model-based estimator
+
+<br>
+
+::: incremental
+
+- Use *sdmTMB* model as previously presented.
+
+- Two levels of *complexity*: $\omega + \epsilon$ or $\omega$
+
+- Check model convergence
+
+- Do not run model if taxon not present in sampled data
+
+- Use effort data and fitted model to *predict* bycatch for every fishing set, then aggregate by year to get $\hat{B}_{y}$
+
+:::
+
+## Modelling steps
+
+![](../figures/3_sampsize/case2.png){fig-align="center"}
+
+Repeat process 100 times: calculate relative error to evaluate performance
+
+# Results
+
+## Model-based estimator (FOB)
+
+![](../figures/3_sampsize/old_figs/FOB/conv_model.png){fig-align="center"}
+
+## Estimators performance (FOB)
+
+![](../figures/3_sampsize/old_figs/FOB/agg_re.png){fig-align="center" width="50%"}
+
+## Model-based estimator (FSC)
+
+![](../figures/3_sampsize/old_figs/FSC/conv_model.png){fig-align="center"}
+
+## Estimators performance (FSC)
+
+![](../figures/3_sampsize/old_figs/FSC/agg_re.png){fig-align="center"}
+
+## Discussion
+
+::: incremental
+
+::: {style="font-size: 0.9em;"}
+
+- Spatio-temporal modelling framework suitable for fisheries with fine-scale information
+- Simulation framework applicable to other fisheries
+- Ratio estimator tends to underestimate bycatch for most taxa when coverage is $<$ 20%
+- Model-based estimator robust under low sampling coverage scenarios, except for rare taxa
+- Result may not be extrapolated to other tuna fisheries with different gears
+
+:::
+
+:::
+
+## Thank you {background-color="black"}
+
+<br> <br>
+
+<center>
+
+![](__AZTI_secundario_BlancoAmarillo.png){width="50%"}
+
+<br>
+
+[Contact:]{style="font-size:40px"} <br> [gmoron\@azti.es](mailto:gmoron@azti.es){style="font-size:40px"}
+
+</center>
+
+## References
+
