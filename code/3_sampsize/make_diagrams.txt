@@ -3,13 +3,17 @@ config:
   theme: redux
 ---
 flowchart TD
-    A("Observers data<img src='https://raw.githubusercontent.com/GiancarloMCorrea/2025_ICCAT_PS_BYCATCH/main/figures/3_sampsize/old_figs/tab_sim.png'; width='30' />")
+    A("Observers data<img src='https://raw.githubusercontent.com/GiancarloMCorrea/2025_ICCAT_PS_BYCATCH/main/figures/3_sampsize/tab_obs.png'; width='30' />")
     subgraph SIM1["<div style="width:30em; height:1.7em; display:flex; justify-content: flex-start; align-items:flex-end;">Repeat 100 times</div>"]
     B("Randomly subset trips (%)")
-    C("Sampled data<img src='https://raw.githubusercontent.com/GiancarloMCorrea/2025_ICCAT_PS_BYCATCH/main/figures/3_sampsize/old_figs/tab_samp.png'; width='30' />")
+    C("Sampled data<img src='https://raw.githubusercontent.com/GiancarloMCorrea/2025_ICCAT_PS_BYCATCH/main/figures/3_sampsize/tab_samp.png'; width='30' />")
     C --> D["Model-based estimator"] & E["Ratio estimator"]
     end
     A --> B --> C
+
+    %% Style: increase font size of ALL nodes
+    classDef big-font font-size:20px;
+    class A,B,C,D,E big-font;
 	
 	
 	
@@ -23,8 +27,13 @@ flowchart LR
     Y3("Effort data<img src='https://raw.githubusercontent.com/GiancarloMCorrea/2025_ICCAT_PS_BYCATCH/main/figures/3_sampsize/tab_eff.png'; width='30' />")
     subgraph SIM2["<div style="width:30em; height:1.7em; display:flex; justify-content: flex-start; align-items:flex-end;">Repeat 100 times</div>"]
     Y4("Simulated data<img src='https://raw.githubusercontent.com/GiancarloMCorrea/2025_ICCAT_PS_BYCATCH/main/figures/3_sampsize/tab_sim.png'; width='30' />")
-    Y5("Sampled data<img src='https://raw.githubusercontent.com/GiancarloMCorrea/2025_ICCAT_PS_BYCATCH/main/figures/3_sampsize/tab_samp.png'; width='30' />")
-    Y5 --> Y6["Model-based estimator"] & Y7["Ratio estimator"]
+    Y5("Randomly subset trips (%)")
+    Y6("Sampled data<img src='https://raw.githubusercontent.com/GiancarloMCorrea/2025_ICCAT_PS_BYCATCH/main/figures/3_sampsize/tab_samp.png'; width='30' />")
+    Y6 --> Y7["Model-based estimator"] & Y8["Ratio estimator"]
     end
     Y1 --> Y2 --> Y4
-    Y3 --> Y4 --> Y5
+    Y3 --> Y4 --> Y5 --> Y6
+
+    %% Style: increase font size of ALL nodes
+    classDef big-font font-size:20px;
+    class Y1,Y2,Y3,Y4,Y5,Y6,Y7,Y8 big-font;

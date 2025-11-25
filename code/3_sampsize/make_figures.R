@@ -68,6 +68,25 @@ mydat4 %>% gt %>% data_color(
 
 
 # -------------------------------------------------------------------------
+# Transform png to svg files:
+my_image <- image_read(file.path(alt_plot_folder, 'tab_eff.png'))
+my_svg <- image_convert(my_image, format="svg")
+image_write(my_svg, file.path(alt_plot_folder, 'tab_eff.svg'))
+
+my_image <- image_read(file.path(alt_plot_folder, 'tab_sim.png'))
+my_svg <- image_convert(my_image, format="svg")
+image_write(my_svg, file.path(alt_plot_folder, 'tab_sim.svg'))
+
+my_image <- image_read(file.path(alt_plot_folder, 'tab_samp.png'))
+my_svg <- image_convert(my_image, format="svg")
+image_write(my_svg, file.path(alt_plot_folder, 'tab_samp.svg'))
+
+my_image <- image_read(file.path(alt_plot_folder, 'tab_obs.png'))
+my_svg <- image_convert(my_image, format="svg")
+image_write(my_svg, file.path(alt_plot_folder, 'tab_obs.svg'))
+
+
+# -------------------------------------------------------------------------
 # Make figure to compare % presence in sets by selected species:
 
 # FOB plot:

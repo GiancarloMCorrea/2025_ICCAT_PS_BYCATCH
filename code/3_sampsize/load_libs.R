@@ -22,6 +22,8 @@ library(future)
 library(tidyr)
 library(reshape2)
 require(here)
+require(rsvg)
+library(magick)
 source('code/parameters_for_plots.R')
 source('code/aux_functions.R')
 
