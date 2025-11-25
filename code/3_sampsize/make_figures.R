@@ -11,20 +11,20 @@ alt_plot_folder = "figures/3_sampsize"
 # Create fake data:
 
 # Effort data:
-mydat = data.frame(Trip_id = rep(1:4, each = 3), 
-                   Set_id = rep(1:3, times = 4),
-                   Year = rep(2015:2016, each = 6), 
-                   Quarter = rep(c(2,1,4,5), each = 3), 
-                   T_catch = round(exp(rlnorm(n = 12, meanlog = 1, sdlog = 0.2)), digits = 2))
+mydat = data.frame(Trip_id = rep(1:6, each = 3), 
+                   Set_id = rep(1:3, times = 6),
+                   Year = rep(2015:2016, each = 9), 
+                   Quarter = rep(c(2,1,4,3,2,1), each = 3), 
+                   T_catch = round(exp(rlnorm(n = 18, meanlog = 1, sdlog = 0.2)), digits = 2))
 # Simulated data:
-mydat2 = mydat %>% mutate(Bycatch = round(exp(rlnorm(n = 12, meanlog = 0.25, sdlog = 0.2)), digits = 2))
+mydat2 = mydat %>% mutate(Bycatch = round(exp(rlnorm(n = 18, meanlog = 0.25, sdlog = 0.2)), digits = 2))
 # Observers data:
-mydat4 = mydat2 %>% mutate(Bycatch = round(Bycatch*rnorm(n = 12, mean = 1, sd = 0.1), digits = 2))
+mydat4 = mydat2 %>% filter(Trip_id %in% c(1,3,4,6)) %>% mutate(Bycatch = round(Bycatch*rnorm(n = 12, mean = 1, sd = 0.1), digits = 2))
 # Sampled data:
 mydat3 = mydat4 %>% filter(Trip_id %in% c(1,3))
 
 # Make figure 
-colpal = RColorBrewer::brewer.pal(n = 4, name = 'Set3')
+colpal = RColorBrewer::brewer.pal(n = 6, name = 'Set3')
 
 # Make effort data:
 mydat %>% gt %>% data_color(
