@@ -50,17 +50,17 @@ mydat2 %>% gt %>% data_color(
 mydat3 %>% gt %>% data_color(
   columns = Trip_id,
   target_columns = everything(),
-  palette = colpal[c(1,3)]
+  palette = colpal[c(1,4)]
 ) %>% tab_style(
   style = cell_text(weight = "bold"),
   locations = cells_column_labels(columns = everything())
 ) %>% gtsave(filename = file.path(alt_plot_folder, 'tab_samp.png'))
 
-# Make simulated data:
+# Make observers data:
 mydat4 %>% gt %>% data_color(
   columns = Trip_id,
   target_columns = everything(),
-  palette = colpal
+  palette = colpal[c(1,3,4,6)]
 ) %>% tab_style(
   style = cell_text(weight = "bold"),
   locations = cells_column_labels(columns = everything())
