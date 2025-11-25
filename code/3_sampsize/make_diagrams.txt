@@ -10,3 +10,21 @@ flowchart TD
     C --> D["Model-based estimator"] & E["Ratio estimator"]
     end
     A --> B --> C
+	
+	
+	
+---
+config:
+  theme: redux
+---
+flowchart LR
+    Y1("Observers data<img src='https://raw.githubusercontent.com/GiancarloMCorrea/2025_ICCAT_PS_BYCATCH/main/figures/3_sampsize/tab_obs.png'; width='30' />")
+    Y2("Fit sdmTMB model")
+    Y3("Effort data<img src='https://raw.githubusercontent.com/GiancarloMCorrea/2025_ICCAT_PS_BYCATCH/main/figures/3_sampsize/tab_eff.png'; width='30' />")
+    subgraph SIM2["<div style="width:30em; height:1.7em; display:flex; justify-content: flex-start; align-items:flex-end;">Repeat 100 times</div>"]
+    Y4("Simulated data<img src='https://raw.githubusercontent.com/GiancarloMCorrea/2025_ICCAT_PS_BYCATCH/main/figures/3_sampsize/tab_sim.png'; width='30' />")
+    Y5("Sampled data<img src='https://raw.githubusercontent.com/GiancarloMCorrea/2025_ICCAT_PS_BYCATCH/main/figures/3_sampsize/tab_samp.png'; width='30' />")
+    Y5 --> Y6["Model-based estimator"] & Y7["Ratio estimator"]
+    end
+    Y1 --> Y2 --> Y4
+    Y3 --> Y4 --> Y5

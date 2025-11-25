@@ -21,7 +21,7 @@ mydat2 = mydat %>% mutate(Bycatch = round(exp(rlnorm(n = 18, meanlog = 0.25, sdl
 # Observers data:
 mydat4 = mydat2 %>% filter(Trip_id %in% c(1,3,4,6)) %>% mutate(Bycatch = round(Bycatch*rnorm(n = 12, mean = 1, sd = 0.1), digits = 2))
 # Sampled data:
-mydat3 = mydat4 %>% filter(Trip_id %in% c(1,3))
+mydat3 = mydat4 %>% filter(Trip_id %in% c(1,4))
 
 # Make figure 
 colpal = RColorBrewer::brewer.pal(n = 6, name = 'Set3')
