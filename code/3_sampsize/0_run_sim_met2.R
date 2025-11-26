@@ -146,9 +146,9 @@ trash = snowfall::sfLapply(1:nSims, function(j) {
                                      check_residuals = FALSE)
         # Merge with results df:
         if(!is.null(sdmtmb_df)) { 
-          sdmtmb_df = sdmtmb_df %>% rename(est_model = est)
+          mod_est_df = sdmtmb_df[[1]] %>% rename(est_model = est)
           estimate_df = left_join(estimate_df, 
-                                  sdmtmb_df %>% select(year, est_model, category), 
+                                  mod_est_df %>% select(year, est_model, category), 
                                   by = c("year"))
           estimate_df$est_model[is.na(estimate_df$est_model)] = 0 # fill NA with zeros
           estimate_df$category = mean(estimate_df$category, na.rm = TRUE) # to fill NA when missing years

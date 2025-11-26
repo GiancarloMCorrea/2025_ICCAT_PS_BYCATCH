@@ -125,7 +125,8 @@ run_sdmTMB_model = function(sp_data, this_formula, sp_mesh, this_goal = 'sample-
     
   } # Goal: estimation
   
-  pred_time = NULL # predictions
+  pred_time = NULL # time predictions
+  PredGrid = NULL # predictions eff
   if(check_df$all_ok) {
     # Plot residuals
     check_df = sanity(mod_upd, silent = TRUE)
@@ -176,6 +177,14 @@ run_sdmTMB_model = function(sp_data, this_formula, sp_mesh, this_goal = 'sample-
     pred_time$category = this_cat
     if(save_results) write.csv(pred_time, file = file.path(this_model_folder, 'pred_est_time.csv'), row.names = FALSE)
     
+    # To plot predictions spatially:
+    PredGrid = predictions$data
+    if(n_comps == 1) PredGrid$bycatch_est = mod_upd$family$linkinv(PredGrid$est)
+    if(n_comps == 2) {
+      if(mod_upd$family$link[1] == 'logit' & mod_upd$family$link[2] == 'log') PredGrid$bycatch_est = inv.logit(PredGrid$est1)*exp(PredGrid$est2)
+      if(mod_upd$family$link[1] == 'log' & mod_upd$family$link[2] == 'log') PredGrid$bycatch_est = exp(PredGrid$est1)*exp(PredGrid$est2)
+    }
+    
     if(make_plots) {
       # Plot ratio and sdmTMB estimates:
       ratioEst = calculate_ratio_bycatch(obs_df = sp_data, eff_df = effPoints, type = 'production')
@@ -187,15 +196,6 @@ run_sdmTMB_model = function(sp_data, this_formula, sp_mesh, this_goal = 'sample-
       ggsave(paste0('compare_estimates', img_type), path = this_plot_folder, plot = p1,
              width = img_width*0.75, height = 90, units = 'mm', dpi = img_res)
       
-      # -------------------------------------------------------------------------
-      # Plot predictions spatially:
-      PredGrid = predictions$data
-      if(n_comps == 1) PredGrid$bycatch_est = mod_upd$family$linkinv(PredGrid$est)
-      if(n_comps == 2) {
-        if(mod_upd$family$link[1] == 'logit' & mod_upd$family$link[2] == 'log') PredGrid$bycatch_est = inv.logit(PredGrid$est1)*exp(PredGrid$est2)
-        if(mod_upd$family$link[1] == 'log' & mod_upd$family$link[2] == 'log') PredGrid$bycatch_est = exp(PredGrid$est1)*exp(PredGrid$est2)
-      }
-      
       p1 = plot_predictions(plot_data = PredGrid, MyGrid = MyGrid)
       ggsave(filename = paste0('pred_spt_time', img_type), path = this_plot_folder, plot = p1, 
              width = img_width, height = 140, units = 'mm', dpi = img_res)
@@ -204,7 +204,7 @@ run_sdmTMB_model = function(sp_data, this_formula, sp_mesh, this_goal = 'sample-
     
   } # if model converged
   
-  return(pred_time)
+  return(list(pred_time, PredGrid))
   
 }
 

@@ -1,21 +1,19 @@
 rm(list = ls())
 
 # -------------------------------------------------------------------------
-
 # Define type of school to be analyzed:
 source('code/3_sampsize/load_libs.R')
-source('code/1_single/sdmTMB-config.R') # for model-based estimates
+source('code/1_single/sdmTMB-config.R')
 
-# Read 'effort' data:
-# This is the observers data that will be treated as 100% 
+# Read data:
 effPoints = readRDS(file = file.path('data/1_single', this_type, 'weight_data.rds'))
 effPoints = effPoints %>% mutate(marea_id = paste(vessel_code, trip_start_date, sep = '_'))
 
 # Species to analyze:
 these_sp = unique(effPoints$sp_name)
 
-# Specify number of simulations:
-nSims = 100
+# Specify number of replicates:
+nSims = 4
 
 # Mesh cutoff:
 if(this_type == 'FOB') mesh_cutoff = 1.5
@@ -23,10 +21,6 @@ if(this_type == 'FSC') mesh_cutoff = 1
 
 # N cores for parallel:
 n_cores = 4
-
-# -------------------------------------------------------------------------
-# Estimate true values:
-true_data = effPoints %>% group_by(year, sp_name) %>% summarise(true = sum(bycatch), .groups = 'drop')
 
 # -------------------------------------------------------------------------
 # Start running simulation in parallel:
@@ -43,42 +37,22 @@ trash = snowfall::sfLapply(1:nSims, function(j) {
   require(fmesher)
   
   for(i in 1:length(frac_vector)) {
-  
+    
     obs_marea = effPoints %>% group_by(year, marea_id) %>% summarise() %>% group_by(year) %>% slice_sample(prop = frac_vector[i]) 
-    obs_data = effPoints %>% filter(marea_id %in% obs_marea$marea_id)
+    obs_data = effPoints %>% mutate(cluster_id = if_else(marea_id %in% obs_marea$marea_id, 1, 2))
     # Obs_data will be used for all species
     
-    # Create folder to save sim estimates 
-    if(j == 1) { 
-      dir.create(file.path(model_folder, 'sim_est', frac_vector[i]), showWarnings = FALSE, recursive = TRUE)
-      dir.create(file.path(model_folder, 'obs_sim_data', frac_vector[i]), showWarnings = FALSE, recursive = TRUE)
-    }
+    # Create folder to save results:
+    if(j == 1) dir.create(file.path(model_folder, 'crossval', frac_vector[i]), showWarnings = FALSE, recursive = TRUE)
     
     # Loop over species
-    save_sim = list() # to save estimates
     for(isp in seq_along(these_sp)) {
       
       # Filter sp:
-      sp_data = obs_data %>% filter(sp_name == these_sp[isp])
+      sp_data = obs_data %>% filter(sp_name == these_sp[isp], cluster_id == 1)
       
       # Effort sp:
-      effSp = effPoints %>% filter(sp_name == these_sp[isp])
-      
-      # Save data:
-      if(j == 1) {
-        sp_data$samp_frac = frac_vector[i]
-        saveRDS(sp_data, file = file.path(model_folder, 'obs_sim_data', frac_vector[i], 
-                                          paste0("sp_", isp, ".rds")))
-      }
-      
-      # ----------------------------------------
-      # Ratio estimator:
-      ratio_df = calculate_ratio_bycatch(obs_df = sp_data, eff_df = effSp, type = 'production')
-      ratio_df = ratio_df %>% group_by(year, sp_name) %>% summarise(est_ratio = sum(est), .groups = 'drop')
-      estimate_df = left_join(true_data %>% filter(sp_name == these_sp[isp]), ratio_df, by = c("year", "sp_name"))
-      # Add information:
-      estimate_df$sim = paste0("sim_", j)
-      estimate_df$samp_frac = frac_vector[i]
+      effSp = obs_data %>% filter(sp_name == these_sp[isp], cluster_id == 2)
       
       # ----------------------------------------
       # Model-based estimator:
@@ -111,36 +85,45 @@ trash = snowfall::sfLapply(1:nSims, function(j) {
                                      effPoints = effSp, yr_keep = yr_keep, qt_keep = qt_keep,
                                      save_model = FALSE, make_plots = FALSE, save_results = FALSE,
                                      check_residuals = FALSE)
-        # Merge with results df:
-        if(!is.null(sdmtmb_df)) { 
-          mod_est_df = sdmtmb_df[[1]] %>% rename(est_model = est)
-          estimate_df = left_join(estimate_df, 
-                                  mod_est_df %>% select(year, est_model, category), 
-                                  by = c("year"))
-          estimate_df$est_model[is.na(estimate_df$est_model)] = 0 # fill NA with zeros
-          estimate_df$category = mean(estimate_df$category, na.rm = TRUE) # to fill NA when missing years
+        
+        if(!is.null(sdmtmb_df[[1]])) { 
+          # Merge predictions:
+          pred_data = left_join(effSp, sdmtmb_df[[2]] %>% ungroup() %>% select(id_set, bycatch_est), by = "id_set")
+          pred_data$bycatch_est[is.na(pred_data$bycatch_est)] = 0 # zeros for no predictions
+          # Calculate RMSE and MAE:
+          out_data = data.frame(rmse = sqrt(mean((pred_data$bycatch - pred_data$bycatch_est)^2)),
+                                mae = mean(abs(pred_data$bycatch - pred_data$bycatch_est)) )
+          out_data$category = mean(sdmtmb_df[[1]]$category)
         } else { # if model failed, then NA:
-          estimate_df$est_model = NA
-          estimate_df$category = 3 # model failed identifier
+          pred_data = effSp
+          pred_data$bycatch_est = NA # NA values when model failed
+          # Calculate RMSE and MAE:
+          out_data = data.frame(rmse = NA, mae = NA )
+          out_data$category = 3
         }
         
-      } else { # If missing data, then estimate = 0:
+      } else { # If missing data, then predictions = 0:
         
-        estimate_df$est_model = 0
-        estimate_df$category = 4 # no data identifier
+        pred_data = effSp
+        pred_data$bycatch_est = 0
+        # Calculate RMSE and MAE:
+        out_data = data.frame(rmse = sqrt(mean((pred_data$bycatch - pred_data$bycatch_est)^2)),
+                              mae = mean(abs(pred_data$bycatch - pred_data$bycatch_est)) )
+        out_data$category = 4
         
       }
       
-      # Save results
-      save_sim[[isp]] = estimate_df
+      # Add sim and sample_frac scenarios info:
+      out_data$sim = paste0("sim_", j)
+      out_data$samp_frac = frac_vector[i]
+      out_data$sp_name = these_sp[isp]
       
+      # Save results
+      saveRDS(out_data, file = file.path(model_folder, 'crossval', frac_vector[i], 
+                                         paste0("sp-", isp, "_sim-", j, ".rds")))
+
     } # Loop over species
     
-    # Save estimates:
-    save_sim = bind_rows(save_sim)
-    saveRDS(save_sim, file = file.path(model_folder, 'sim_est', frac_vector[i], 
-                                        paste0("sim_", j, ".rds")))
-      
   } # Loop sampling vector
   
 } )# parallel loop over sims
