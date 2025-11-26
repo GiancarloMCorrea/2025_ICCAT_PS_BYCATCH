@@ -251,11 +251,11 @@ For the tuna purse seine fishery in the Pacific Ocean, @lennert-codyEffectsSampl
 
 # Figures
 
-![Frequency of sets (2015-2023) with presence of taxa analyzed in this study. The taxa categorization is shown in color (see @tbl-taxa for details).](../figures/3_sampsize/freq_sp.png){#fig-freq-sp}
+![Frequency of sets (2015-2023) with presence of taxa analyzed in this study. The taxa categorization is shown in color (see @tbl-taxa for details).](../figures/3_sampsize/old_figs/freq_sp.png){#fig-freq-sp}
 
 {{< pagebreak >}}
 
-![Frequency of replicates for which the model-based estimator was not run due to missing data, failed, included only the spatial component ($\omega$), or included the spatial and spatiotemporal component ($\omega + \epsilon$). Information for FOB sets and shown by taxa and sampling coverage scenario.](../figures/3_sampsize/FOB/conv_model.png){#fig-conv-fob}
+![Frequency of replicates for which the model-based estimator was not run due to missing data, failed, included only the spatial component ($\omega$), or included the spatial and spatiotemporal component ($\omega + \epsilon$). Information for FOB sets and shown by taxa and sampling coverage scenario.](../figures/3_sampsize/old_figs/FOB/conv_model.png){#fig-conv-fob}
 
 {{< pagebreak >}}
 
@@ -263,11 +263,11 @@ For the tuna purse seine fishery in the Pacific Ocean, @lennert-codyEffectsSampl
 
 {{< pagebreak >}}
 
-![Frequency of replicates for which the model-based estimator was not run due to missing data, failed, included only the spatial component ($\omega$), or included the spatial and spatiotemporal component ($\omega + \epsilon$). Information for FSC sets and shown by taxa and sampling coverage scenario.](../figures/3_sampsize/FSC/conv_model.png){#fig-conv-fsc}
+![Frequency of replicates for which the model-based estimator was not run due to missing data, failed, included only the spatial component ($\omega$), or included the spatial and spatiotemporal component ($\omega + \epsilon$). Information for FSC sets and shown by taxa and sampling coverage scenario.](../figures/3_sampsize/old_figs/FSC/conv_model.png){#fig-conv-fsc}
 
 {{< pagebreak >}}
 
-![Relative error by ratio and model-based estimator aggregated over the years. The dots and line range represent the median and the 95% of values across replicates, respectively. Information for FSC sets and shown by taxa and sampling coverage scenario.](../figures/3_sampsize/FSC/agg_re.png){#fig-re-fsc}
+![Relative error by ratio and model-based estimator aggregated over the years. The dots and line range represent the median and the 95% of values across replicates, respectively. Information for FSC sets and shown by taxa and sampling coverage scenario.](../figures/3_sampsize/old_figs/FSC/agg_re.png){#fig-re-fsc}
 
 {{< pagebreak >}}
 
@@ -287,32 +287,32 @@ For the tuna purse seine fishery in the Pacific Ocean, @lennert-codyEffectsSampl
 
 {{< pagebreak >}}
 
-![Locations of FOB sets with presence of a common taxon (*Acanthocybium solandri*) in the bycatch composition under different sampling coverage scenarios.](../figures/3_sampsize/FOB/sim_spatial/map_1.png){#suppfig-map-loc1}
+![Locations of FOB sets with presence of a common taxon (*Acanthocybium solandri*) in the bycatch composition under different sampling coverage scenarios.](../figures/3_sampsize/old_figs/FOB/sim_spatial/map_1.png){#suppfig-map-loc1}
 
 {{< pagebreak >}}
 
-![Locations of FOB sets with presence of a rare taxon (Alopiidae) in the bycatch composition under different sampling coverage scenarios.](../figures/3_sampsize/FOB/sim_spatial/map_2.png){#suppfig-map-loc2}
+![Locations of FOB sets with presence of a rare taxon (Alopiidae) in the bycatch composition under different sampling coverage scenarios.](../figures/3_sampsize/old_figs/FOB/sim_spatial/map_2.png){#suppfig-map-loc2}
 
 {{< pagebreak >}}
 
-![Relative error by ratio and model-based estimator per year. The continuous line and the shaded area represent the median and the 95% of values across replicates, respectively. Information for FOB sets and common taxa (see @tbl-taxa) and shown by sampling coverage scenario.](../figures/3_sampsize/FOB/yr_re_Common.png){#suppfig-reyr-co-fob}
+![Relative error by ratio and model-based estimator per year. The continuous line and the shaded area represent the median and the 95% of values across replicates, respectively. Information for FOB sets and common taxa (see @tbl-taxa) and shown by sampling coverage scenario.](../figures/3_sampsize/old_figs/FOB/yr_re_Common.png){#suppfig-reyr-co-fob}
 
 {{< pagebreak >}}
 
-![Relative error by ratio and model-based estimator per year. The continuous line and the shaded area represent the median and the 95% of values across replicates, respectively. Information for FOB sets and special interest taxa (see @tbl-taxa) and shown by sampling coverage scenario.](../figures/3_sampsize/FOB/yr_re_Specialinterest.png){#suppfig-reyr-si-fob}
+![Relative error by ratio and model-based estimator per year. The continuous line and the shaded area represent the median and the 95% of values across replicates, respectively. Information for FOB sets and special interest taxa (see @tbl-taxa) and shown by sampling coverage scenario.](../figures/3_sampsize/old_figs/FOB/yr_re_Specialinterest.png){#suppfig-reyr-si-fob}
 
 {{< pagebreak >}}
 
-![Relative error by ratio and model-based estimator per year. The continuous line and the shaded area represent the median and the 95% of values across replicates, respectively. Information for FOB sets and rare taxa (see @tbl-taxa) and shown by sampling coverage scenario.](../figures/3_sampsize/FOB/yr_re_Rare.png){#suppfig-reyr-ra-fob}
+![Relative error by ratio and model-based estimator per year. The continuous line and the shaded area represent the median and the 95% of values across replicates, respectively. Information for FOB sets and rare taxa (see @tbl-taxa) and shown by sampling coverage scenario.](../figures/3_sampsize/old_figs/FOB/yr_re_Rare.png){#suppfig-reyr-ra-fob}
 
 {{< pagebreak >}}
 
-![Relative error by ratio and model-based estimator per year. The continuous line and the shaded area represent the median and the 95% of values across replicates, respectively. Information for FSC sets and common taxa (see @tbl-taxa) and shown by sampling coverage scenario.](../figures/3_sampsize/FSC/yr_re_Common.png){#suppfig-reyr-co-fsc}
+![Relative error by ratio and model-based estimator per year. The continuous line and the shaded area represent the median and the 95% of values across replicates, respectively. Information for FSC sets and common taxa (see @tbl-taxa) and shown by sampling coverage scenario.](../figures/3_sampsize/old_figs/FSC/yr_re_Common.png){#suppfig-reyr-co-fsc}
 
 {{< pagebreak >}}
 
-![Relative error by ratio and model-based estimator per year. The continuous line and the shaded area represent the median and the 95% of values across replicates, respectively. Information for FSC sets and special interest taxa (see @tbl-taxa) and shown by sampling coverage scenario.](../figures/3_sampsize/FSC/yr_re_Specialinterest.png){#suppfig-reyr-si-fsc}
+![Relative error by ratio and model-based estimator per year. The continuous line and the shaded area represent the median and the 95% of values across replicates, respectively. Information for FSC sets and special interest taxa (see @tbl-taxa) and shown by sampling coverage scenario.](../figures/3_sampsize/old_figs/FSC/yr_re_Specialinterest.png){#suppfig-reyr-si-fsc}
 
 {{< pagebreak >}}
 
-![Relative error by ratio and model-based estimator per year. The continuous line and the shaded area represent the median and the 95% of values across replicates, respectively. Information for FSC sets and rare taxa (see @tbl-taxa) and shown by sampling coverage scenario.](../figures/3_sampsize/FSC/yr_re_Rare.png){#suppfig-reyr-ra-fsc}
+![Relative error by ratio and model-based estimator per year. The continuous line and the shaded area represent the median and the 95% of values across replicates, respectively. Information for FSC sets and rare taxa (see @tbl-taxa) and shown by sampling coverage scenario.](../figures/3_sampsize/old_figs/FSC/yr_re_Rare.png){#suppfig-reyr-ra-fsc}

@@ -78,9 +78,11 @@ mydat4 %>% gt %>% data_color(
 # After save them as PDF, then convert them to PNG by running the following lines:
 
 img <- image_read_pdf(file.path(alt_plot_folder, "case1.pdf"))
+img = image_trim(img) 
 image_write(img, file.path(alt_plot_folder, "case1.png"))
 
 img <- image_read_pdf(file.path(alt_plot_folder, "case2.pdf"))
+img = image_trim(img) 
 image_write(img, file.path(alt_plot_folder, "case2.png"))
 
 # -------------------------------------------------------------------------

@@ -102,7 +102,8 @@ Evaluate the impacts of sampling coverage scenarios on bycatch estimates in trop
 
 ## Spatio-temporal model
 
-They model spatial and spatio-temporal processes. Implemented in the R package *sdmTMB* [@Anderson2024]. The model can be represented as:
+They model spatial and spatio-temporal processes. 
+Implemented in the R package *sdmTMB* [@Anderson2024]. The model can be represented as:
 
 $$\mathbb{E}[y] = \mu = g^{-1}(\eta)$$
 
@@ -166,6 +167,8 @@ where $T^\ast_{y,a}$ is the target catch in effort data. Finally, annual bycatch
 ## Modelling steps
 
 ![](../figures/3_sampsize/case2.png){fig-align="center"}
+
+<br>
 
 Repeat process 100 times: calculate relative error to evaluate performance
 
