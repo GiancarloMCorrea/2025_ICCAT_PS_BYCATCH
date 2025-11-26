@@ -15,6 +15,8 @@ mydat = data.frame(Trip_id = rep(1:6, each = 3),
                    Set_id = rep(1:3, times = 6),
                    Year = rep(2015:2016, each = 9), 
                    Quarter = rep(c(2,1,4,3,2,1), each = 3), 
+                   Lon = round(rnorm(n = 18, mean = -5), digits = 2),
+                   Lat = round(rnorm(n = 18, mean = 58), digits = 2),
                    T_catch = round(exp(rlnorm(n = 18, meanlog = 1, sdlog = 0.2)), digits = 2))
 # Simulated data:
 mydat2 = mydat %>% mutate(Bycatch = round(exp(rlnorm(n = 18, meanlog = 0.25, sdlog = 0.2)), digits = 2))
@@ -66,8 +68,9 @@ mydat4 %>% gt %>% data_color(
   locations = cells_column_labels(columns = everything())
 ) %>% gtsave(filename = file.path(alt_plot_folder, 'tab_obs.png'))
 
+# Next step: make the diagram in Mermaid
 
-# Next, since I found issues exporting the mermaid diagram to PNG files directly,
+# Next, since I found issues exporting the Mermaid diagram to PNG files directly,
 # I had to export them to SVG files. 
 
 # Then, open the SVG files and save them as PDF (right click on the background and then print)

@@ -194,7 +194,7 @@ Repeat process 100 times: calculate relative error to evaluate performance
 ::: {style="font-size: 0.9em;"}
 
 - Spatio-temporal modelling framework suitable for fisheries with fine-scale information
-- Simulation framework applicable to other fisheries
+- Simulation framework applicable to other fisheries and adapted to explore different sampling strategies
 - Ratio estimator tends to underestimate bycatch for most taxa when coverage is $<$ 20%
 - Model-based estimator robust under low sampling coverage scenarios, except for rare taxa
 - Result may not be extrapolated to other tuna fisheries with different gears
