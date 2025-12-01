@@ -91,6 +91,7 @@ eff_data = eff_data %>% mutate(marea_id = paste(numero_de_bateau, dbq, sep = '_'
 # Use effort data:
 grid_size = 5 # in degrees
 
+# -------------------------------------------------------------------------
 # Point and grid (aggregated):
 effDF = eff_data %>% mutate(id_set = 1:n()) %>%
             st_as_sf(coords = c("lon", "lat"), crs = 4326, remove = FALSE)
@@ -118,14 +119,21 @@ nrow(obsPoints)
 obsPoints = obsPoints %>% st_drop_geometry()
 saveRDS(obsPoints, file = file.path(data_folder, 'obsPoints.rds'))
 
+
+# -------------------------------------------------------------------------
 # Filter based on some criteria:
 # Identify grid (and points inside) with some criteria:
-my_tab = xtabs(~ ID + year, data = effPoints) # find frequency of sets per grid and year
-my_freq = apply(my_tab, 1, function(x) sum(x > 0)) # find recurrent grids over the years
-include_grid = names(my_freq)[which(as.vector(my_freq) >= 0)] # IMPORTANT: include all!
-include_grid = as.numeric(include_grid)
-# Apply filter to grid df and calculate Area km2:
-MyGrid = MyGrid %>% dplyr::filter(ID %in% include_grid)
-plot(MyGrid)
-MyGrid$Area_km2 = as.numeric(st_area(MyGrid))*1e-06 # in km2
-save(MyGrid, file = file.path(data_folder, 'MyGrid.RData'))
+
+# Use effort data
+include_grid = unique(effPoints$ID)
+MyGrid_eff = MyGrid %>% dplyr::filter(ID %in% include_grid)
+plot(MyGrid_eff)
+MyGrid_eff$Area_km2 = as.numeric(st_area(MyGrid_eff))*1e-06 # in km2
+save(MyGrid_eff, file = file.path(data_folder, 'MyGrid_eff.RData'))
+
+# Use observer data
+include_grid = unique(obsPoints$ID)
+MyGrid_obs = MyGrid %>% dplyr::filter(ID %in% include_grid)
+plot(MyGrid_obs)
+MyGrid_obs$Area_km2 = as.numeric(st_area(MyGrid_obs))*1e-06 # in km2
+save(MyGrid_obs, file = file.path(data_folder, 'MyGrid_obs.RData'))

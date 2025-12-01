@@ -52,7 +52,7 @@ trash = snowfall::sfLapply(1:nSims, function(j) {
       sp_data = obs_data %>% filter(sp_name == these_sp[isp], cluster_id == 1)
       
       # Effort sp:
-      effSp = obs_data %>% filter(sp_name == these_sp[isp], cluster_id == 2)
+      effSp = obs_data %>% filter(sp_name == these_sp[isp]) # predict in the entire dataset
       
       # ----------------------------------------
       # Model-based estimator:

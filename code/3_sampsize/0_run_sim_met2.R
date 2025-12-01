@@ -16,7 +16,8 @@ effPoints$id_obs = 1:nrow(effPoints) # to do matching later
 nSims = 100
 
 # Mesh cutoff:
-mesh_cutoff = 1.5 # same as in part 1
+if(this_type == 'FOB') mesh_cutoff = 1.5
+if(this_type == 'FSC') mesh_cutoff = 1
 
 # N cores for parallel:
 n_cores = 4
@@ -145,7 +146,8 @@ trash = snowfall::sfLapply(1:nSims, function(j) {
                                      save_model = FALSE, make_plots = FALSE, save_results = FALSE,
                                      check_residuals = FALSE)
         # Merge with results df:
-        if(!is.null(sdmtmb_df)) { 
+        if(!is.null(sdmtmb_df[[1]])) { 
+          # Annual bycatch estimates:
           mod_est_df = sdmtmb_df[[1]] %>% rename(est_model = est)
           estimate_df = left_join(estimate_df, 
                                   mod_est_df %>% select(year, est_model, category), 

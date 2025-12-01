@@ -51,11 +51,13 @@ trash = snowfall::sfLapply(1:nSims, function(j) {
     # Create folder to save sim estimates 
     if(j == 1) { 
       dir.create(file.path(model_folder, 'sim_est', frac_vector[i]), showWarnings = FALSE, recursive = TRUE)
+      dir.create(file.path(model_folder, 'crossval', frac_vector[i]), showWarnings = FALSE, recursive = TRUE)
       dir.create(file.path(model_folder, 'obs_sim_data', frac_vector[i]), showWarnings = FALSE, recursive = TRUE)
     }
     
     # Loop over species
     save_sim = list() # to save estimates
+    save_cross = list() # to save crossval
     for(isp in seq_along(these_sp)) {
       
       # Filter sp:
@@ -112,34 +114,59 @@ trash = snowfall::sfLapply(1:nSims, function(j) {
                                      save_model = FALSE, make_plots = FALSE, save_results = FALSE,
                                      check_residuals = FALSE)
         # Merge with results df:
-        if(!is.null(sdmtmb_df)) { 
+        if(!is.null(sdmtmb_df[[1]])) { 
+          # Annual bycatch estimates:
           mod_est_df = sdmtmb_df[[1]] %>% rename(est_model = est)
           estimate_df = left_join(estimate_df, 
                                   mod_est_df %>% select(year, est_model, category), 
                                   by = c("year"))
           estimate_df$est_model[is.na(estimate_df$est_model)] = 0 # fill NA with zeros
           estimate_df$category = mean(estimate_df$category, na.rm = TRUE) # to fill NA when missing years
+          # MAE and RMSE:
+          pred_data = left_join(effSp, sdmtmb_df[[2]] %>% ungroup() %>% select(id_set, bycatch_est), by = "id_set")
+          pred_data$bycatch_est[is.na(pred_data$bycatch_est)] = 0 # zeros for no predictions
+          out_data = data.frame(rmse = sqrt(mean((pred_data$bycatch - pred_data$bycatch_est)^2)),
+                                mae = mean(abs(pred_data$bycatch - pred_data$bycatch_est)) )
+          out_data$category = mean(sdmtmb_df[[1]]$category)
         } else { # if model failed, then NA:
+          # Annual bycatch estimates:
           estimate_df$est_model = NA
           estimate_df$category = 3 # model failed identifier
+          # MAE and RMSE:
+          out_data = data.frame(rmse = NA, mae = NA )
+          out_data$category = 3
         }
         
       } else { # If missing data, then estimate = 0:
-        
+        # Annual bycatch estimates:
         estimate_df$est_model = 0
         estimate_df$category = 4 # no data identifier
-        
+        # MAE and RMSE:
+        pred_data = effSp
+        pred_data$bycatch_est = 0
+        out_data = data.frame(rmse = sqrt(mean((pred_data$bycatch - pred_data$bycatch_est)^2)),
+                              mae = mean(abs(pred_data$bycatch - pred_data$bycatch_est)) )
+        out_data$category = 4
       }
+      
+      # Add sim and sample_frac scenarios info:
+      out_data$sim = paste0("sim_", j)
+      out_data$samp_frac = frac_vector[i]
+      out_data$sp_name = these_sp[isp]
       
       # Save results
       save_sim[[isp]] = estimate_df
+      save_cross[[isp]] = out_data
       
     } # Loop over species
     
     # Save estimates:
     save_sim = bind_rows(save_sim)
+    save_cross = bind_rows(save_cross)
     saveRDS(save_sim, file = file.path(model_folder, 'sim_est', frac_vector[i], 
                                         paste0("sim_", j, ".rds")))
+    saveRDS(save_cross, file = file.path(model_folder, 'crossval', frac_vector[i], 
+                                       paste0("sim_", j, ".rds")))
       
   } # Loop sampling vector
   

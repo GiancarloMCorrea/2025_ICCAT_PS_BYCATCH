@@ -128,13 +128,13 @@ ggsave(paste0('freq_sp', img_type), plot = p3, path = "figures/3_sampsize",
 # -------------------------------------------------------------------------
 # Plot grid by set type:
 
-load('data/1_single/FOB/MyGrid.RData')
-p1 = ggplot(MyGrid) + geom_sf(fill = 'white')
+load('data/1_single/FOB/MyGrid_obs.RData')
+p1 = ggplot(MyGrid_obs) + geom_sf(fill = 'white')
 p1 = add_sf_map(p1) 
 p1 = p1 + ggtitle("FOB")
 
-load('data/1_single/FSC/MyGrid.RData')
-p2 = ggplot(MyGrid) + geom_sf(fill = 'white')
+load('data/1_single/FSC/MyGrid_obs.RData')
+p2 = ggplot(MyGrid_obs) + geom_sf(fill = 'white')
 p2 = add_sf_map(p2) 
 p2 = p2 + ggtitle("FSC")
 
